@@ -41,12 +41,14 @@ function App() {
       Object.entries(newFilters).filter(([_, value]) => value !== '')
     );
     setFilters(activeFilters);
+    setCurrentPage(1);
   };
 
   useEffect(() => {
     if (!token) {
       setIsLoading(false);
       setProducts([]); // লগআউট করলে প্রোডাক্ট তালিকা খালি করে দেওয়া
+      setTotalPages(0);
       return;
     }
 
@@ -65,8 +67,8 @@ function App() {
           }
         });
         
-        setProducts(response.data.products);
-        setTotalPages(response.data.totalPages);
+        setProducts(response.data.products || []);
+        setTotalPages(response.data.totalPages || 0);
       } catch (err) {
         if (err.response && err.response.status === 403) {
             handleLogout();
@@ -74,6 +76,8 @@ function App() {
             setError("Failed to fetch products. Please try again.");
         }
         console.error("API Error:", err);
+        setProducts([]);
+        setTotalPages(0);
       } finally {
         setIsLoading(false);
       }

@@ -1,5 +1,52 @@
 import React from 'react';
 
+const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, setItemsPerPage }) => {
+    if (totalPages <= 1) {
+        return null; // যদি এক পৃষ্ঠার কম ডেটা থাকে, পেজিনেশন দেখানোর দরকার নেই।
+    }
+
+    return (
+        <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center justify-center space-x-2">
+                <label className="text-sm text-gray-600">Rows per page:</label>
+                <select 
+                    value={itemsPerPage} 
+                    onChange={(e) => {
+                        setItemsPerPage(Number(e.target.value));
+                        onPageChange(1); // Rows per page পরিবর্তন করলে প্রথম পৃষ্ঠায় যান।
+                    }}
+                    className="px-3 py-1 border border-gray-300 rounded text-sm"
+                >
+                    <option value={10}>10</option>
+                    <option value={25}>25</option>
+                    <option value={50}>50</option>
+                </select>
+            </div>
+            <div className="flex items-center space-x-2">
+                <button 
+                    onClick={() => onPageChange(currentPage - 1)} 
+                    disabled={currentPage === 1}
+                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm disabled:opacity-50"
+                >
+                    Previous
+                </button>
+                <span className="text-sm text-gray-600">
+                    Page {currentPage} of {totalPages}
+                </span>
+                <button 
+                    onClick={() => onPageChange(currentPage + 1)} 
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm disabled:opacity-50"
+                >
+                    Next
+                </button>
+            </div>
+        </div>
+    );
+};
+
+
+
 // ProductRow নামে একটি সাব-কম্পোনেন্ট তৈরি করা হচ্ছে
 const ProductRow = ({ product }) => {
   return (
@@ -33,45 +80,7 @@ const ProductRow = ({ product }) => {
   );
 };
 
-const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, setItemsPerPage }) => {
-    if (totalPages <= 1) return null; // যদি এক পৃষ্ঠার কম ডেটা থাকে, পেজিনেশন দেখানোর দরকার নেই।
 
-    return (
-        <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center justify-center space-x-2">
-                <label className="text-sm text-gray-600">Rows per page:</label>
-                <select 
-                    value={itemsPerPage} 
-                    onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                    className="px-3 py-1 border border-gray-300 rounded text-sm"
-                >
-                    <option value={10}>10</option>
-                    <option value={25}>25</option>
-                    <option value={50}>50</option>
-                </select>
-            </div>
-            <div className="flex items-center space-x-2">
-                <button 
-                    onClick={() => onPageChange(currentPage - 1)} 
-                    disabled={currentPage === 1}
-                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm disabled:opacity-50"
-                >
-                    Previous
-                </button>
-                <span className="text-sm text-gray-600">
-                    Page {currentPage} of {totalPages}
-                </span>
-                <button 
-                    onClick={() => onPageChange(currentPage + 1)} 
-                    disabled={currentPage === totalPages}
-                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm disabled:opacity-50"
-                >
-                    Next
-                </button>
-            </div>
-        </div>
-    );
-};
 
 // মূল ProductTable কম্পোনেন্ট
 const ProductTable = ({  products, isLoading, error, currentPage, totalPages, onPageChange, itemsPerPage, setItemsPerPage }) => {
