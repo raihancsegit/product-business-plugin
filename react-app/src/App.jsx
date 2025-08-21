@@ -5,7 +5,7 @@ import Header from './components/Header';
 import FilterControls from './components/FilterControls';
 import ProductTable from './components/ProductTable';
 import Login from './components/Login';
-
+import ProductModal from './components/ProductModal';
 const API_URL = 'http://wp2025.local/wp-json/productscope/v1/products';
 
 function App() {
@@ -21,6 +21,19 @@ function App() {
   // ফিল্টার এবং সাইডবারের জন্য নতুন স্টেট
   const [filters, setFilters] = useState({});
   const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+   const [selectedProduct, setSelectedProduct] = useState(null); 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleOpenModal = (product) => {
+        setSelectedProduct(product);
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setSelectedProduct(null); // মডাল বন্ধ হলে সিলেক্ট করা প্রোডাক্ট রিসেট করুন
+    };
 
   const handleLoginSuccess = () => {
     setToken(localStorage.getItem('authToken'));
@@ -117,10 +130,17 @@ function App() {
                 onPageChange={handlePageChange}
                 itemsPerPage={itemsPerPage}
                 setItemsPerPage={setItemsPerPage}
+                onRowClick={handleOpenModal}
             />
           </div>
         </div>
       </main>
+      {isModalOpen && (
+                <ProductModal 
+                    product={selectedProduct} 
+                    onClose={handleCloseModal} 
+                />
+            )}
     </div>
   );
 }

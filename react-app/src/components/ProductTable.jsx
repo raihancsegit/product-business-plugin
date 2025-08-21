@@ -49,10 +49,10 @@ const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, setIt
 
 
 // ProductRow নামে একটি সাব-কম্পোনেন্ট তৈরি করা হচ্ছে
-const ProductRow = ({ product }) => {
+const ProductRow = ({ product,onRowClick  }) => {
   return (
-    <tr className="hover:bg-gray-50 transition-colors cursor-pointer">
-      <td className="px-3 py-4">
+    <tr onClick={() => onRowClick(product)} className="hover:bg-gray-50 transition-colors cursor-pointer">
+      <td className="px-3 py-4" onClick={(e) => e.stopPropagation()}>
         <input type="checkbox" className="row-checkbox rounded border-gray-300 text-brand-blue focus:ring-brand-blue" />
       </td>
       <td className="px-4 py-4" style={{ width: '500px' }}>
@@ -84,7 +84,7 @@ const ProductRow = ({ product }) => {
 
 
 // মূল ProductTable কম্পোনেন্ট
-const ProductTable = ({  products, isLoading, error, currentPage, totalPages, onPageChange, itemsPerPage, setItemsPerPage }) => {
+const ProductTable = ({  products, isLoading, error, onRowClick, currentPage, totalPages, onPageChange, itemsPerPage, setItemsPerPage }) => {
   const renderTableContent = () => {
     if (isLoading) {
       return (
@@ -107,7 +107,7 @@ const ProductTable = ({  products, isLoading, error, currentPage, totalPages, on
         </tr>
       );
     }
-    return products.map(product => <ProductRow key={product.id} product={product} />);
+    return products.map(product => <ProductRow key={product.id} product={product} onRowClick={onRowClick} />);
   };
   
   // যেহেতু সব ইউজার সব কলাম দেখতে পাবে না, আমাদের হেডারটিও ডাইনামিক করতে হবে।
