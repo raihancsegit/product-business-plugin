@@ -16,7 +16,7 @@ function App() {
 
    const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
-    const [itemsPerPage, setItemsPerPage] = useState(25);
+    const [itemsPerPage, setItemsPerPage] = useState(3);
   
   // ফিল্টার এবং সাইডবারের জন্য নতুন স্টেট
   const [filters, setFilters] = useState({});

@@ -186,18 +186,21 @@ function psp_get_products_callback(WP_REST_Request $request)
     ];
 
     $selected_columns_str = '';
-
+    $user_product_limit_sql = '';
 
     // ইউজারের রোল অনুযায়ী কলাম এবং ডেটা লিমিট সেট করা
     if (in_array('administrator', $roles) || in_array('psp_advanced_user', $roles)) {
-        $selected_columns_str = implode(', ', $column_map['advanced']); // '*' ব্যবহার করা হচ্ছে
+        $selected_columns_str = implode(', ', $column_map['advanced']);
     } elseif (in_array('psp_expert_user', $roles)) {
         $selected_columns_str = implode(', ', $column_map['expert']);
     } elseif (in_array('psp_basic_user', $roles)) {
         $selected_columns_str = implode(', ', $column_map['basic']);
-        $total_products = (int) $wpdb->get_var("SELECT COUNT(id) FROM $table_name");
-        $limit = floor($total_products * 0.5);
-        if ($limit > 0) $limit_query = "LIMIT $limit";
+        // **পরিবর্তন:** এখানে আমরা একটি সাব-কোয়েরির জন্য লিমিট তৈরি করব
+        $total_available_products = (int) $wpdb->get_var("SELECT COUNT(id) FROM $table_name");
+        $limit_count_for_basic_user = floor($total_available_products * 0.5);
+        if ($limit_count_for_basic_user > 0) {
+            $user_product_limit_sql = "LIMIT " . $limit_count_for_basic_user;
+        }
     } else {
         return new WP_Error('no_permission', 'You do not have permission.', ['status' => 403]);
     }
@@ -252,22 +255,19 @@ function psp_get_products_callback(WP_REST_Request $request)
 
     // বেসিক ইউজারের জন্য মোট প্রোডাক্ট লিমিট করা
     $total_products_count_query = "SELECT COUNT(id) FROM $table_name $where_sql";
-    if (in_array('psp_basic_user', $roles)) {
-        $total_available = (int) $wpdb->get_var($total_products_count_query);
-        $limit_for_basic = floor($total_available * 0.5);
-        $total_products_count = $limit_for_basic;
+    if (!empty($user_product_limit_sql)) {
+        $total_products_count = (int) $wpdb->get_var("SELECT COUNT(*) FROM (SELECT id FROM $table_name $where_sql $user_product_limit_sql) AS limited_products");
     } else {
-        $total_products_count = (int) $wpdb->get_var($total_products_count_query);
+        $total_products_count = (int) $wpdb->get_var("SELECT COUNT(id) FROM $table_name $where_sql");
     }
-
-    $query = "SELECT $selected_columns_str FROM $table_name $where_sql $pagination_sql";
+    $query = "SELECT $selected_columns_str FROM $table_name $where_sql $user_product_limit_sql $pagination_sql";
     $products = $wpdb->get_results($query);
-    // $total_products_count = (int) $wpdb->get_var("SELECT COUNT(id) FROM $table_name $where_sql");
+
 
     return new WP_REST_Response([
         'products' => $products,
-        'total' => $total_products_count, // মোট প্রোডাক্ট সংখ্যা
-        'totalPages' => ceil($total_products_count / $per_page), // মোট পৃষ্ঠা সংখ্যা
+        'total' => $total_products_count,
+        'totalPages' => ceil($total_products_count / $per_page),
         'user_role' => $roles[0] ?? 'unknown'
     ], 200);
 }

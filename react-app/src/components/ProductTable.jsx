@@ -17,6 +17,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, setIt
                     }}
                     className="px-3 py-1 border border-gray-300 rounded text-sm"
                 >
+                   <option value={3}>3</option>
                     <option value={10}>10</option>
                     <option value={25}>25</option>
                     <option value={50}>50</option>
