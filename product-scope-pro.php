@@ -170,6 +170,85 @@ function psp_register_api_routes()
 }
 add_action('rest_api_init', 'psp_register_api_routes');
 
+add_action('rest_api_init', 'psp_register_favorites_api_routes');
+function psp_register_favorites_api_routes()
+{
+    // ফেভারিট প্রোডাক্টের তালিকা পাওয়ার জন্য
+    register_rest_route('productscope/v1', '/favorites', [
+        'methods' => 'GET',
+        'callback' => 'psp_get_favorites',
+        'permission_callback' => function () {
+            return is_user_logged_in();
+        }
+    ]);
+
+    // একটি প্রোডাক্টকে ফেভারিট হিসেবে যোগ/বাদ দেওয়ার জন্য
+    register_rest_route('productscope/v1', '/favorites/toggle', [
+        'methods' => 'POST',
+        'callback' => 'psp_toggle_favorite',
+        'permission_callback' => function () {
+            return is_user_logged_in();
+        }
+    ]);
+}
+
+// ফেভারিট প্রোডাক্টের তালিকা ফেরত দেওয়ার ফাংশন
+function psp_get_favorites(WP_REST_Request $request)
+{
+    $user_id = get_current_user_id();
+    $favorite_ids = get_user_meta($user_id, 'psp_favorite_products', true);
+
+    if (empty($favorite_ids)) {
+        return new WP_REST_Response(['products' => []], 200);
+    }
+
+    // এখন এই আইডিগুলো দিয়ে প্রোডাক্টের ডেটা ডাটাবেস থেকে আনতে হবে
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'psp_products';
+
+    $id_placeholders = implode(', ', array_fill(0, count($favorite_ids), '%d'));
+    $query = $wpdb->prepare("SELECT * FROM $table_name WHERE id IN ($id_placeholders)", $favorite_ids);
+
+    $products = $wpdb->get_results($query);
+
+    return new WP_REST_Response(['products' => $products], 200);
+}
+
+// একটি প্রোডাক্টকে ফেভারিট হিসেবে যোগ বা বাদ দেওয়ার ফাংশন
+function psp_toggle_favorite(WP_REST_Request $request)
+{
+    $user_id = get_current_user_id();
+    $product_id = $request->get_param('product_id');
+
+    if (empty($product_id)) {
+        return new WP_Error('bad_request', 'Product ID is required.', ['status' => 400]);
+    }
+
+    $product_id = intval($product_id);
+    $favorite_ids = get_user_meta($user_id, 'psp_favorite_products', true);
+
+    // যদি কোনো ফেভারিট আগে থেকে না থাকে, তাহলে এটি একটি খালি অ্যারে হবে
+    if (!is_array($favorite_ids)) {
+        $favorite_ids = [];
+    }
+
+    // চেক করা হচ্ছে প্রোডাক্টটি আগে থেকেই ফেভারিট লিস্টে আছে কিনা
+    if (in_array($product_id, $favorite_ids)) {
+        // যদি থাকে, তাহলে বাদ দেওয়া হচ্ছে (আনফেভারিট)
+        $favorite_ids = array_diff($favorite_ids, [$product_id]);
+        $message = 'Product removed from favorites.';
+    } else {
+        // যদি না থাকে, তাহলে যোগ করা হচ্ছে (ফেভারিট)
+        $favorite_ids[] = $product_id;
+        $message = 'Product added to favorites.';
+    }
+
+    // নতুন অ্যারেটি ডাটাবেসে আপডেট করা হচ্ছে
+    update_user_meta($user_id, 'psp_favorite_products', $favorite_ids);
+
+    return new WP_REST_Response(['success' => true, 'message' => $message, 'favorites' => $favorite_ids], 200);
+}
+
 
 function psp_get_products_callback(WP_REST_Request $request)
 {

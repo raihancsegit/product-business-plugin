@@ -1,6 +1,6 @@
 import React from 'react';
 
-const ProductModal = ({ product, onClose }) => {
+const ProductModal = ({ product, onClose,isFavorite, onToggleFavorite }) => {
     if (!product) return null;
 
     return (
@@ -17,8 +17,11 @@ const ProductModal = ({ product, onClose }) => {
                     <div className="flex items-center justify-between">
                         <h3 className="text-xl font-semibold text-gray-900">Product Details</h3>
                         <div className="flex items-center space-x-2">
-                            <button className="p-2 text-gray-400 hover:text-red-500 rounded-lg">
-                                <i className="fa-regular fa-heart"></i>
+                            <button 
+                                onClick={() => onToggleFavorite(product.id)}
+                                className="p-2 text-gray-400 hover:text-red-500 rounded-lg"
+                            >
+                                <i className={`${isFavorite ? 'fa-solid text-red-500' : 'fa-regular'} fa-heart`}></i>
                             </button>
                             <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 rounded-lg">
                                 <i className="fa-solid fa-times"></i>

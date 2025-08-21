@@ -49,12 +49,19 @@ const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, setIt
 
 
 // ProductRow নামে একটি সাব-কম্পোনেন্ট তৈরি করা হচ্ছে
-const ProductRow = ({ product,onRowClick  }) => {
+const ProductRow = ({ product,favoriteIds,onToggleFavorite ,onRowClick  }) => {
+  const isFavorite = favoriteIds.includes(product.id);
   return (
     <tr onClick={() => onRowClick(product)} className="hover:bg-gray-50 transition-colors cursor-pointer">
       <td className="px-3 py-4" onClick={(e) => e.stopPropagation()}>
         <input type="checkbox" className="row-checkbox rounded border-gray-300 text-brand-blue focus:ring-brand-blue" />
       </td>
+       <td className="px-3 py-4 text-center" onClick={(e) => {
+                e.stopPropagation(); // মডাল খোলা থেকে বিরত রাখুন
+                onToggleFavorite(product.id);
+            }}>
+                <i className={`${isFavorite ? 'fa-solid text-red-500' : 'fa-regular'} fa-heart cursor-pointer hover:text-red-500`}></i>
+            </td>
       <td className="px-4 py-4" style={{ width: '500px' }}>
         <div className="flex items-center space-x-3">
           <img className="w-12 h-12 rounded-lg object-cover border border-gray-200 flex-shrink-0" src={product.image_url} alt={product.product_title} />
@@ -84,7 +91,7 @@ const ProductRow = ({ product,onRowClick  }) => {
 
 
 // মূল ProductTable কম্পোনেন্ট
-const ProductTable = ({  products, isLoading, error, onRowClick, currentPage, totalPages, onPageChange, itemsPerPage, setItemsPerPage }) => {
+const ProductTable = ({  products, isLoading, error, onRowClick,favoriteIds, onToggleFavorite, currentPage, totalPages, onPageChange, itemsPerPage, setItemsPerPage }) => {
   const renderTableContent = () => {
     if (isLoading) {
       return (
@@ -107,7 +114,8 @@ const ProductTable = ({  products, isLoading, error, onRowClick, currentPage, to
         </tr>
       );
     }
-    return products.map(product => <ProductRow key={product.id} product={product} onRowClick={onRowClick} />);
+    return products.map(product => <ProductRow key={product.id} product={product} onRowClick={onRowClick} favoriteIds={favoriteIds}
+                onToggleFavorite={onToggleFavorite}/>);
   };
   
   // যেহেতু সব ইউজার সব কলাম দেখতে পাবে না, আমাদের হেডারটিও ডাইনামিক করতে হবে।
@@ -126,6 +134,7 @@ const ProductTable = ({  products, isLoading, error, onRowClick, currentPage, to
                 <thead className="bg-gray-50">
                     <tr>
                         <th style={{ width: '60px' }} className="px-3 py-3"><input type="checkbox" /></th>
+                         <th style={{ width: '50px' }} className="px-3 py-3"></th>
                         <th style={{ width: '500px' }} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
                         <th style={{ width: '100px' }} className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
                         <th style={{ width: '100px' }} className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reviews</th>
@@ -157,6 +166,7 @@ const ProductTable = ({  products, isLoading, error, onRowClick, currentPage, to
                 onPageChange={onPageChange}
                 itemsPerPage={itemsPerPage}
                 setItemsPerPage={setItemsPerPage}
+
             />
         
     </div>

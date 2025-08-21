@@ -7,6 +7,7 @@ import ProductTable from './components/ProductTable';
 import Login from './components/Login';
 import ProductModal from './components/ProductModal';
 const API_URL = 'http://wp2025.local/wp-json/productscope/v1/products';
+const FAVORITES_API_URL = 'http://wp2025.local/wp-json/productscope/v1/favorites';
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('authToken'));
@@ -24,6 +25,8 @@ function App() {
 
    const [selectedProduct, setSelectedProduct] = useState(null); 
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [favoriteIds, setFavoriteIds] = useState([]);
 
   const handleOpenModal = (product) => {
         setSelectedProduct(product);
@@ -62,8 +65,50 @@ function App() {
       setIsLoading(false);
       setProducts([]); // লগআউট করলে প্রোডাক্ট তালিকা খালি করে দেওয়া
       setTotalPages(0);
+      setFavoriteIds([]);
       return;
     }
+
+    const fetchInitialData = async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            // Fetch Favorites first
+            const favResponse = await axios.get(FAVORITES_API_URL, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const favIds = favResponse.data.products.map(p => p.id);
+            setFavoriteIds(favIds);
+
+            // Fetch Products
+            const params = new URLSearchParams({
+                ...filters,
+                page: currentPage,
+                per_page: itemsPerPage,
+            }).toString();
+            
+            const prodResponse = await axios.get(`${API_URL}?${params}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            setProducts(prodResponse.data.products || []);
+            setTotalPages(prodResponse.data.totalPages || 0);
+
+        } catch (err) {
+            if (err.response && err.response.status === 403) {
+                handleLogout();
+            } else {
+                setError("Failed to fetch data. Please try again.");
+            }
+            console.error("API Error:", err);
+            setProducts([]);
+            setTotalPages(0);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    fetchInitialData();
 
     const fetchProducts = async () => {
       setIsLoading(true);
@@ -99,6 +144,34 @@ function App() {
     fetchProducts();
   }, [token, filters,currentPage, itemsPerPage]);
 
+
+  const handleToggleFavorite = async (productId) => {
+        const isCurrentlyFavorite = favoriteIds.includes(productId);
+
+        // UI-তে সাথে সাথে পরিবর্তন দেখানোর জন্য (Optimistic Update)
+        if (isCurrentlyFavorite) {
+            setFavoriteIds(prev => prev.filter(id => id !== productId));
+        } else {
+            setFavoriteIds(prev => [...prev, productId]);
+        }
+
+        try {
+            await axios.post(`${FAVORITES_API_URL}/toggle`, 
+                { product_id: productId }, 
+                { headers: { 'Authorization': `Bearer ${token}` } }
+            );
+            // সফল হলে কিছু করার দরকার নেই, কারণ UI আগেই আপডেট হয়ে গেছে
+        } catch (err) {
+            console.error("Failed to update favorite status:", err);
+            // যদি API কলে এরর হয়, তাহলে UI-কে আগের অবস্থায় ফিরিয়ে আনা
+            if (isCurrentlyFavorite) {
+                setFavoriteIds(prev => [...prev, productId]);
+            } else {
+                setFavoriteIds(prev => prev.filter(id => id !== productId));
+            }
+        }
+    };
+
   const handlePageChange = (newPage) => {
         if (newPage > 0 && newPage <= totalPages) {
             setCurrentPage(newPage);
@@ -131,6 +204,8 @@ function App() {
                 itemsPerPage={itemsPerPage}
                 setItemsPerPage={setItemsPerPage}
                 onRowClick={handleOpenModal}
+                favoriteIds={favoriteIds} 
+                onToggleFavorite={handleToggleFavorite} 
             />
           </div>
         </div>
