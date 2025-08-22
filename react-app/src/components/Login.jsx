@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-
-const JWT_API_URL = 'http://wp2025.local/wp-json/jwt-auth/v1/token';
-
+import { JWT_API_URL } from '../config';
 const Login = ({ onLoginSuccess }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');

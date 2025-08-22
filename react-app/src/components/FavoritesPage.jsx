@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-
-const FAVORITES_API_URL = 'http://wp2025.local/wp-json/productscope/v1/favorites';
-
+import {  FAVORITES_API_URL } from '../config';
 // ফেভারিট পেজের জন্য আমরা ProductTable-এর মতো একটি টেবিল ব্যবহার করতে পারি
 // কোড পুনরাবৃত্তি এড়ানোর জন্য, আমরা ProductRow কম্পোনেন্টটি এখানেও ব্যবহার করতে পারি (অথবা একটি শেয়ার্ড কম্পোনেন্ট ফোল্ডারে রাখতে পারি)
 const FavoriteProductRow = ({ product, onRowClick, isFavorite, onToggleFavorite }) => {

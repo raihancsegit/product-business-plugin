@@ -422,3 +422,63 @@ function psp_add_to_mylist(WP_REST_Request $request)
         'my_list' => $new_list_ids
     ], 200);
 }
+
+
+function psp_enqueue_react_app_assets()
+{
+    // শুধুমাত্র যে পেজে আমাদের শর্টকোডটি আছে, সেখানেই এই ফাইলগুলো লোড হবে
+    if (is_singular() && has_shortcode(get_post()->post_content, 'product_scope_dashboard')) {
+
+        $react_app_dist_path = plugin_dir_path(__FILE__) . 'react-app/dist/';
+        $react_app_dist_url = plugin_dir_url(__FILE__) . 'react-app/dist/';
+
+        // Vite manifest.json ফাইল ব্যবহার করে সঠিক ফাইলের নাম খুঁজে বের করে
+        $manifest_path = $react_app_dist_path . 'manifest.json';
+        if (file_exists($manifest_path)) {
+            $manifest_data = file_get_contents($manifest_path);
+            if ($manifest_data) {
+                $manifest = json_decode($manifest_data, true);
+
+                // মূল JS ফাইল (entry) খুঁজে বের করা
+                $js_entry_file = null;
+                if (isset($manifest['index.html']['file'])) {
+                    $js_entry_file = $manifest['index.html']['file'];
+                } elseif (isset($manifest['main.jsx']['file'])) {
+                    $js_entry_file = $manifest['main.jsx']['file'];
+                }
+
+                if ($js_entry_file) {
+                    // CSS ফাইল লোড করা
+                    $css_files = [];
+                    if (isset($manifest['index.html']['css'])) {
+                        $css_files = $manifest['index.html']['css'];
+                    } elseif (isset($manifest['main.jsx']['css'])) {
+                        $css_files = $manifest['main.jsx']['css'];
+                    }
+
+                    foreach ($css_files as $index => $css_file) {
+                        wp_enqueue_style('psp-react-app-css-' . $index, $react_app_dist_url . $css_file);
+                    }
+
+                    // JS ফাইল লোড করা
+                    wp_enqueue_script('psp-react-app-js', $react_app_dist_url . $js_entry_file, [], '1.0', true);
+
+                    // React অ্যাপে ডেটা পাঠানোর জন্য
+                    wp_localize_script('psp-react-app-js', 'psp_object', [
+                        'root_url' => home_url(),
+                        'api_base_url'   => rest_url('productscope/v1/'),
+                        'nonce'   => wp_create_nonce('wp_rest')
+                    ]);
+                }
+            }
+        }
+    }
+}
+add_action('wp_enqueue_scripts', 'psp_enqueue_react_app_assets');
+
+// React অ্যাপের জন্য শর্টকোড
+function psp_react_app_shortcode()
+{
+    return '<div id="root"></div>';
+}
+add_shortcode('product_scope_dashboard', 'psp_react_app_shortcode');

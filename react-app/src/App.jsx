@@ -8,9 +8,7 @@ import Login from './components/Login';
 import ProductModal from './components/ProductModal';
 import FavoritesPage from './components/FavoritesPage'; 
 import MyListPage from './components/MyListPage'; 
-const API_URL = 'http://wp2025.local/wp-json/productscope/v1/products';
-const FAVORITES_API_URL = 'http://wp2025.local/wp-json/productscope/v1/favorites';
-const MYLIST_API_URL = 'http://wp2025.local/wp-json/productscope/v1/mylist';
+import { PRODUCTS_API_URL, FAVORITES_API_URL,MYLIST_API_URL } from './config';
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('authToken'));
@@ -117,9 +115,12 @@ function App() {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             // API থেকে {products: [...]} অবজেক্ট আসছে
-            const favIds = favResponse.data.products.map(p => p.id);
-            setFavoriteIds(favIds); // << **গুরুত্বপূর্ণ:** নিশ্চিত করুন যে এটি সঠিকভাবে আইডি অ্যারে সেট করছে
-
+            if (favResponse.data && favResponse.data.products) {
+              const favIds = favResponse.data.products.map(p => p.id);
+              setFavoriteIds(favIds);
+            } else {
+                setFavoriteIds([]); // যদি products প্রপার্টি না থাকে, তাহলে খালি অ্যারে সেট করুন
+            }
             // ২. এরপর প্রোডাক্ট তালিকা লোড করুন
             const params = new URLSearchParams({
                 ...filters,
@@ -127,7 +128,7 @@ function App() {
                 per_page: itemsPerPage,
             }).toString();
             
-            const prodResponse = await axios.get(`${API_URL}?${params}`, {
+            const prodResponse = await axios.get(`${PRODUCTS_API_URL}?${params}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 

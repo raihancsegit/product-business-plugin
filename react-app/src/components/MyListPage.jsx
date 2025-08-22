@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 // API URL - এটি App.jsx থেকেও prop হিসেবে পাস করা যেতে পারে, তবে আপাতত এখানেই রাখছি
-const MYLIST_API_URL = 'http://wp2025.local/wp-json/productscope/v1/mylist';
-
+import { MYLIST_API_URL } from '../config';
 // টেবিলের প্রতিটি সারির জন্য একটি সাব-কম্পোনেন্ট
 // এটি কোডকে পরিষ্কার রাখে এবং পুনঃব্যবহারযোগ্য করে তোলে
 const MyListProductRow = ({ product, onRowClick, onToggleFavorite, isFavorite }) => {
