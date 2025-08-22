@@ -1,5 +1,8 @@
 import React from 'react';
-
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHeart as faSolidHeart } from '@fortawesome/free-solid-svg-icons';
+import { faHeart as faRegularHeart } from '@fortawesome/free-regular-svg-icons';
+import { faTimes } from '@fortawesome/free-solid-svg-icons';
 const ProductModal = ({ product, onClose,isFavorite, onToggleFavorite }) => {
     if (!product) return null;
 
@@ -21,10 +24,13 @@ const ProductModal = ({ product, onClose,isFavorite, onToggleFavorite }) => {
                                 onClick={() => onToggleFavorite(product.id)}
                                 className="p-2 text-gray-400 hover:text-red-500 rounded-lg"
                             >
-                                <i className={`${isFavorite ? 'fa-solid text-red-500' : 'fa-regular'} fa-heart`}></i>
+                                <FontAwesomeIcon 
+                                    icon={isFavorite ? faSolidHeart : faRegularHeart} 
+                                    className={`${isFavorite ? 'text-red-500' : 'text-gray-400'} cursor-pointer hover:text-red-500`} 
+                                    />
                             </button>
-                            <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 rounded-lg">
-                                <i className="fa-solid fa-times"></i>
+                           <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 rounded-lg">
+                                <FontAwesomeIcon icon={faTimes} />
                             </button>
                         </div>
                     </div>

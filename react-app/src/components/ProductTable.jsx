@@ -1,5 +1,7 @@
 import React from 'react';
-
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHeart as faSolidHeart } from '@fortawesome/free-solid-svg-icons';
+import { faHeart as faRegularHeart } from '@fortawesome/free-regular-svg-icons';
 const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, setItemsPerPage }) => {
     if (totalPages <= 1) {
         return null; // যদি এক পৃষ্ঠার কম ডেটা থাকে, পেজিনেশন দেখানোর দরকার নেই।
@@ -62,7 +64,10 @@ const ProductRow = ({ product,favoriteIds,onToggleFavorite ,onRowClick ,selected
                 e.stopPropagation(); // মডাল খোলা থেকে বিরত রাখুন
                 onToggleFavorite(product.id);
             }}>
-                <i className={`${isFavorite ? 'fa-solid text-red-500' : 'fa-regular'} fa-heart cursor-pointer hover:text-red-500`}></i>
+              <FontAwesomeIcon 
+                                                  icon={isFavorite ? faSolidHeart : faRegularHeart} 
+                                                  className={`${isFavorite ? 'text-red-500' : 'text-gray-400'} cursor-pointer hover:text-red-500`} 
+                                                  />
             </td>
       <td className="px-4 py-4" style={{ width: '500px' }}>
         <div className="flex items-center space-x-3">

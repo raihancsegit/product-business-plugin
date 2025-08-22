@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFilter, faPlus,faChevronDown  } from '@fortawesome/free-solid-svg-icons';
 // ক্যাটাগরি এবং সাব-ক্যাটাগরির সম্পূর্ণ ডেটা, যা আপনার HTML থেকে নেওয়া হয়েছে
 const categoriesData = [
     {
@@ -97,7 +98,7 @@ const FilterControls = ({ onFilterChange,onAddToList, isAddToListDisabled }) => 
         <div id="dashboard-controls" className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
             <div className="mb-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <i className="fa-solid fa-filter mr-2 text-brand-blue"></i>
+                   <FontAwesomeIcon icon={faFilter} className="mr-2 text-brand-blue" />
                     Filters &amp; Controls
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -122,7 +123,10 @@ const FilterControls = ({ onFilterChange,onAddToList, isAddToListDisabled }) => 
                                         ))
                                     )}
                                 </div>
-                                <i className={`fa-solid fa-chevron-down multi-select-chevron text-gray-400 ${isDropdownOpen ? 'open' : ''}`}></i>
+                               <FontAwesomeIcon 
+                                    icon={faChevronDown} 
+                                    className={`multi-select-chevron text-gray-400 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} 
+                                />
                             </div>
                             {isDropdownOpen && (
                                 <div className="multi-select-content open">
@@ -184,7 +188,7 @@ const FilterControls = ({ onFilterChange,onAddToList, isAddToListDisabled }) => 
                         onClick={handleApplyFilters}
                         className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
                     >
-                        <i className="fa-solid fa-filter mr-2"></i>
+                         <FontAwesomeIcon icon={faFilter} className="mr-2" />
                         Apply Filters
                     </button>
                 </div>
@@ -195,7 +199,7 @@ const FilterControls = ({ onFilterChange,onAddToList, isAddToListDisabled }) => 
                         disabled={isAddToListDisabled}
                         className="bg-brand-blue text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        <i className="fa-solid fa-plus mr-2"></i>
+                         <FontAwesomeIcon icon={faPlus} className="mr-2" />
                         Add Selected to List
                     </button>
                 </div>

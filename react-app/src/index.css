@@ -236,3 +236,24 @@
 #content #root, #primary #root {
   max-width: none !important;
 }
+
+body.psp-dashboard-active {
+  overflow: hidden; /* পুরো স্ক্রিন অ্যাপের নিয়ন্ত্রণে থাকবে, তাই বডি স্ক্রল বন্ধ */
+}
+
+body.psp-dashboard-active .site-content,
+body.psp-dashboard-active .content-area,
+body.psp-dashboard-active .entry-content,
+body.psp-dashboard-active main,
+body.psp-dashboard-active .container {
+  max-width: none !important;
+  width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* #root div-কে পুরো স্ক্রিন জুড়ে দেওয়া */
+#root {
+  height: 100vh;
+  width: 100%;
+}

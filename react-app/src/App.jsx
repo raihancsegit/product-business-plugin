@@ -33,6 +33,16 @@ function App() {
 
    const [selectedRowIds, setSelectedRowIds] = useState([]);
 
+   useEffect(() => {
+        // কম্পোনেন্ট মাউন্ট হলে body-তে ক্লাস যোগ করুন
+        document.body.classList.add('psp-dashboard-active');
+
+        // কম্পোনেন্ট আনমাউন্ট হলে (যেমন অন্য পেজে গেলে) ক্লাসটি মুছে ফেলুন
+        return () => {
+            document.body.classList.remove('psp-dashboard-active');
+        };
+    }, []);
+    
     const handleViewChange = (view) => {
         setCurrentView(view);
     };
@@ -160,7 +170,7 @@ function App() {
                     page: currentPage,
                     per_page: itemsPerPage,
                 }).toString();
-        const response = await axios.get(`${API_URL}?${params}`, {
+        const response = await axios.get(`${PRODUCTS_API_URL}?${params}`, {
           headers: {
             'Authorization': `Bearer ${token}` 
           }

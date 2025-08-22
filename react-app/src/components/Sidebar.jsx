@@ -1,5 +1,6 @@
 import React from 'react';
-
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHome, faHeart, faBookmark, faCog, faQuestionCircle, faSignOutAlt, faBars, faChevronRight, faChartLine } from '@fortawesome/free-solid-svg-icons';
 const Sidebar = ({ isCollapsed, onToggle, onLogout, currentView, onViewChange }) => {
   const sidebarClasses = isCollapsed ? "w-16" : "w-64";
 
@@ -9,13 +10,14 @@ const Sidebar = ({ isCollapsed, onToggle, onLogout, currentView, onViewChange })
         {!isCollapsed && (
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-brand-blue rounded-lg flex items-center justify-center">
-              <i className="fa-solid fa-chart-line text-white text-sm"></i>
+               <FontAwesomeIcon icon={faChartLine} className="text-white text-sm" />
             </div>
             <h1 className="text-lg font-bold text-brand-blue">ProductScope Pro</h1>
           </div>
         )}
         <button onClick={onToggle} className="p-1 rounded-lg hover:bg-gray-100">
-          <i className={`fa-solid ${isCollapsed ? 'fa-chevron-right' : 'fa-bars'} text-gray-600`}></i>
+         
+           <FontAwesomeIcon icon={isCollapsed ? faChevronRight : faBars} className="text-gray-600" />
         </button>
       </div>
       
@@ -27,7 +29,7 @@ const Sidebar = ({ isCollapsed, onToggle, onLogout, currentView, onViewChange })
              onClick={() => onViewChange('dashboard')}
              className={`nav-item w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg hover:bg-gray-100 ${isCollapsed ? 'justify-center' : ''} ${currentView === 'dashboard' ? 'active' : ''}`}
             >
-              <i className="fa-solid fa-home text-gray-400"></i>
+              <FontAwesomeIcon icon={faHome} className="text-gray-400" />
               {!isCollapsed && <span className="ml-3">Dashboard</span>}
             </button>
           </li>
@@ -38,7 +40,7 @@ const Sidebar = ({ isCollapsed, onToggle, onLogout, currentView, onViewChange })
                             onClick={() => onViewChange('favorites')}
                             className={`nav-item w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg hover:bg-gray-100 ${isCollapsed ? 'justify-center' : ''} ${currentView === 'favorites' ? 'active' : ''}`}
                         >
-                            <i className="fa-solid fa-heart text-gray-400"></i>
+                             <FontAwesomeIcon icon={faHeart} className="text-gray-400" />
                             {!isCollapsed && <span className="ml-3">Favorites</span>}
                         </button>
                     </li>
@@ -48,7 +50,7 @@ const Sidebar = ({ isCollapsed, onToggle, onLogout, currentView, onViewChange })
                             onClick={() => onViewChange('mylist')}
                             className={`nav-item w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg hover:bg-gray-100 ${isCollapsed ? 'justify-center' : ''} ${currentView === 'mylist' ? 'active' : ''}`}
                         >
-                            <i className="fa-solid fa-bookmark text-gray-400"></i>
+                            <FontAwesomeIcon icon={faBookmark} className="text-gray-400" />
                             {!isCollapsed && <span className="ml-3">My List</span>}
                         </button>
                     </li>
@@ -59,7 +61,7 @@ const Sidebar = ({ isCollapsed, onToggle, onLogout, currentView, onViewChange })
         {!isCollapsed && (
           <div className="p-4 border-t">
             <button onClick={onLogout} className="nav-item w-full flex items-center px-3 py-2 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50">
-              <i className="fa-solid fa-sign-out-alt mr-3 text-red-500"></i>
+              <FontAwesomeIcon icon={faSignOutAlt} className="text-gray-400" />
               <span>Sign Out</span>
             </button>
           </div>
