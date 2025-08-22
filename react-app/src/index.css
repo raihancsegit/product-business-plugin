@@ -206,3 +206,8 @@
             font-weight: 400;
             padding-left: 24px;
         }
+
+        .bg-brand-blue {
+    --tw-bg-opacity: 1;
+    background-color: rgb(30 58 138);
+}

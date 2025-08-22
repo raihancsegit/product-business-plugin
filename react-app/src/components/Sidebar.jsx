@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Sidebar = ({ isCollapsed, onToggle, onLogout }) => {
+const Sidebar = ({ isCollapsed, onToggle, onLogout, currentView, onViewChange }) => {
   const sidebarClasses = isCollapsed ? "w-16" : "w-64";
 
   return (
@@ -23,12 +23,35 @@ const Sidebar = ({ isCollapsed, onToggle, onLogout }) => {
         <ul className="space-y-2">
           {/* Menu Item Example */}
           <li>
-            <button className={`nav-item w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg hover:bg-gray-100 active ${isCollapsed ? 'justify-center' : ''}`}>
+            <button 
+             onClick={() => onViewChange('dashboard')}
+             className={`nav-item w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg hover:bg-gray-100 ${isCollapsed ? 'justify-center' : ''} ${currentView === 'dashboard' ? 'active' : ''}`}
+            >
               <i className="fa-solid fa-home text-gray-400"></i>
               {!isCollapsed && <span className="ml-3">Dashboard</span>}
             </button>
           </li>
           {/* Add other menu items similarly */}
+
+           <li>
+                        <button 
+                            onClick={() => onViewChange('favorites')}
+                            className={`nav-item w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg hover:bg-gray-100 ${isCollapsed ? 'justify-center' : ''} ${currentView === 'favorites' ? 'active' : ''}`}
+                        >
+                            <i className="fa-solid fa-heart text-gray-400"></i>
+                            {!isCollapsed && <span className="ml-3">Favorites</span>}
+                        </button>
+                    </li>
+
+                    <li>
+                        <button 
+                            onClick={() => onViewChange('mylist')}
+                            className={`nav-item w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg hover:bg-gray-100 ${isCollapsed ? 'justify-center' : ''} ${currentView === 'mylist' ? 'active' : ''}`}
+                        >
+                            <i className="fa-solid fa-bookmark text-gray-400"></i>
+                            {!isCollapsed && <span className="ml-3">My List</span>}
+                        </button>
+                    </li>
         </ul>
       </nav>
 

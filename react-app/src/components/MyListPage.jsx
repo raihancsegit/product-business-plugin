@@ -1,0 +1,132 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
+// API URL - এটি App.jsx থেকেও prop হিসেবে পাস করা যেতে পারে, তবে আপাতত এখানেই রাখছি
+const MYLIST_API_URL = 'http://wp2025.local/wp-json/productscope/v1/mylist';
+
+// টেবিলের প্রতিটি সারির জন্য একটি সাব-কম্পোনেন্ট
+// এটি কোডকে পরিষ্কার রাখে এবং পুনঃব্যবহারযোগ্য করে তোলে
+const MyListProductRow = ({ product, onRowClick, onToggleFavorite, isFavorite }) => {
+    return (
+        <tr onClick={() => onRowClick(product)} className="hover:bg-gray-50 transition-colors cursor-pointer">
+            <td className="px-3 py-4 text-center">
+                <div 
+                    onClick={(e) => { 
+                        e.stopPropagation(); // মডাল খোলা থেকে বিরত রাখতে
+                        onToggleFavorite(product.id);
+                    }}
+                    className="inline-block"
+                >
+                    <i className={`${isFavorite ? 'fa-solid text-red-500' : 'fa-regular'} fa-heart cursor-pointer hover:text-red-500`}></i>
+                </div>
+            </td>
+            <td className="px-4 py-4">
+                <div className="flex items-center space-x-3">
+                    <img 
+                        className="w-12 h-12 rounded-lg object-contain border bg-white" 
+                        src={product.image_url} 
+                        alt={product.product_title} 
+                    />
+                    <div>
+                        <div className="text-sm font-medium text-gray-900 truncate" style={{maxWidth: '400px'}}>
+                            {product.product_title}
+                        </div>
+                        <div className="text-xs text-gray-500 truncate">
+                            {product.product_subtitle || 'No subtitle'}
+                        </div>
+                    </div>
+                </div>
+            </td>
+            <td className="px-3 py-4 text-sm font-medium text-gray-900">${product.price}</td>
+            <td className="px-3 py-4 text-sm">{product.rating}</td>
+            <td className="px-3 py-4 text-sm">{product.category}</td>
+            <td className="px-3 py-4 text-sm">{product.monthly_sales?.toLocaleString()}</td>
+        </tr>
+    );
+};
+
+
+const MyListPage = ({ token, onRowClick, onToggleFavorite, favoriteIds }) => {
+    const [myListProducts, setMyListProducts] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    // এই কম্পোনেন্টটি যখনই দেখানো হবে (বা token পরিবর্তন হবে), তখন API কল করে ডেটা আনবে
+    useEffect(() => {
+        const fetchMyList = async () => {
+            if (!token) {
+                setIsLoading(false);
+                return;
+            }
+            
+            setIsLoading(true);
+            setError(null);
+            
+            try {
+                const response = await axios.get(MYLIST_API_URL, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                setMyListProducts(response.data.products || []);
+            } catch (err) {
+                setError("Failed to load your list. Please try again later.");
+                console.error("Failed to load My List products:", err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        
+        fetchMyList();
+    }, [token]);
+
+    // কন্টেন্ট রেন্ডার করার জন্য একটি হেল্পার ফাংশন
+    const renderContent = () => {
+        if (isLoading) {
+            return <p className="text-center p-8 text-gray-500">Loading your list...</p>;
+        }
+
+        if (error) {
+            return <p className="text-center p-8 text-red-600">{error}</p>;
+        }
+
+        if (myListProducts.length === 0) {
+            return <p className="text-center p-8 text-gray-500">Your list is empty. Add products from the dashboard to see them here.</p>;
+        }
+
+        return (
+            <div className="overflow-x-auto">
+                <table className="w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th className="px-3 py-3 w-16 text-left text-xs font-medium text-gray-500 uppercase">Fav</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
+                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
+                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rating</th>
+                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sales</th>
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {myListProducts.map(product => (
+                            <MyListProductRow
+                                key={product.id}
+                                product={product}
+                                onRowClick={onRowClick}
+                                onToggleFavorite={onToggleFavorite}
+                                isFavorite={favoriteIds.includes(product.id)}
+                            />
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        );
+    };
+
+    return (
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">My Saved List</h2>
+            {renderContent()}
+        </div>
+    );
+};
+
+export default MyListPage;

@@ -38,7 +38,7 @@ const categoriesData = [
     // আপনি এখানে আপনার HTML থেকে বাকি সব ক্যাটাগরি গ্রুপ একইভাবে যুক্ত করতে পারেন
 ];
 
-const FilterControls = ({ onFilterChange }) => {
+const FilterControls = ({ onFilterChange,onAddToList, isAddToListDisabled }) => {
     // সব ফিল্টারের জন্য একটি মাত্র স্টেট অবজেক্ট
     const [filters, setFilters] = useState({
         categories: [],
@@ -189,7 +189,12 @@ const FilterControls = ({ onFilterChange }) => {
                     </button>
                 </div>
                 <div className="flex items-center space-x-3">
-                    <button className="bg-brand-blue text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    <button 
+                        id="bulk-add-btn" 
+                        onClick={onAddToList}
+                        disabled={isAddToListDisabled}
+                        className="bg-brand-blue text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
                         <i className="fa-solid fa-plus mr-2"></i>
                         Add Selected to List
                     </button>

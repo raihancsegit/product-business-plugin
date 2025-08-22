@@ -350,3 +350,75 @@ function psp_get_products_callback(WP_REST_Request $request)
         'user_role' => $roles[0] ?? 'unknown'
     ], 200);
 }
+
+
+add_action('rest_api_init', 'psp_register_mylist_api_routes');
+function psp_register_mylist_api_routes()
+{
+    // "My List"-এর প্রোডাক্ট তালিকা পাওয়ার জন্য
+    register_rest_route('productscope/v1', '/mylist', [
+        'methods' => 'GET',
+        'callback' => 'psp_get_mylist',
+        'permission_callback' => function () {
+            return is_user_logged_in();
+        }
+    ]);
+
+    // "My List"-এ একাধিক প্রোডাক্ট যোগ করার জন্য
+    register_rest_route('productscope/v1', '/mylist/add', [
+        'methods' => 'POST',
+        'callback' => 'psp_add_to_mylist',
+        'permission_callback' => function () {
+            return is_user_logged_in();
+        }
+    ]);
+}
+
+// "My List"-এর প্রোডাক্ট তালিকা ফেরত দেওয়ার ফাংশন
+function psp_get_mylist(WP_REST_Request $request)
+{
+    $user_id = get_current_user_id();
+    // আমরা 'psp_my_list' নামে একটি নতুন মেটা কী ব্যবহার করব
+    $my_list_ids = get_user_meta($user_id, 'psp_my_list', true);
+
+    if (empty($my_list_ids) || !is_array($my_list_ids)) {
+        return new WP_REST_Response(['products' => []], 200);
+    }
+
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'psp_products';
+
+    $id_placeholders = implode(', ', array_fill(0, count($my_list_ids), '%d'));
+    $query = $wpdb->prepare("SELECT * FROM $table_name WHERE id IN ($id_placeholders)", $my_list_ids);
+
+    $products = $wpdb->get_results($query);
+
+    return new WP_REST_Response(['products' => $products], 200);
+}
+
+// "My List"-এ প্রোডাক্ট যোগ করার ফাংশন
+function psp_add_to_mylist(WP_REST_Request $request)
+{
+    $user_id = get_current_user_id();
+    $product_ids_to_add = $request->get_param('product_ids');
+
+    if (empty($product_ids_to_add) || !is_array($product_ids_to_add)) {
+        return new WP_Error('bad_request', 'Product IDs must be an array.', ['status' => 400]);
+    }
+
+    $current_list_ids = get_user_meta($user_id, 'psp_my_list', true);
+    if (!is_array($current_list_ids)) {
+        $current_list_ids = [];
+    }
+
+    // নতুন আইডিগুলো পুরোনো লিস্টের সাথে যোগ করা হচ্ছে, ডুপ্লিকেট বাদ দিয়ে
+    $new_list_ids = array_unique(array_merge($current_list_ids, $product_ids_to_add));
+
+    update_user_meta($user_id, 'psp_my_list', $new_list_ids);
+
+    return new WP_REST_Response([
+        'success' => true,
+        'message' => count($product_ids_to_add) . ' product(s) added to your list.',
+        'my_list' => $new_list_ids
+    ], 200);
+}

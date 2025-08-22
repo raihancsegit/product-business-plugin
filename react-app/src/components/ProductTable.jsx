@@ -49,12 +49,14 @@ const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, setIt
 
 
 // ProductRow নামে একটি সাব-কম্পোনেন্ট তৈরি করা হচ্ছে
-const ProductRow = ({ product,favoriteIds,onToggleFavorite ,onRowClick  }) => {
+const ProductRow = ({ product,favoriteIds,onToggleFavorite ,onRowClick ,selectedRowIds, onSelectionChange }) => {
   const isFavorite = favoriteIds.includes(product.id);
+  const isSelected = selectedRowIds.includes(product.id);
   return (
     <tr onClick={() => onRowClick(product)} className="hover:bg-gray-50 transition-colors cursor-pointer">
       <td className="px-3 py-4" onClick={(e) => e.stopPropagation()}>
-        <input type="checkbox" className="row-checkbox rounded border-gray-300 text-brand-blue focus:ring-brand-blue" />
+        <input type="checkbox" className="row-checkbox rounded border-gray-300 text-brand-blue focus:ring-brand-blue" checked={isSelected}
+                    onChange={() => onSelectionChange(product.id)}/>
       </td>
        <td className="px-3 py-4 text-center" onClick={(e) => {
                 e.stopPropagation(); // মডাল খোলা থেকে বিরত রাখুন
@@ -91,7 +93,7 @@ const ProductRow = ({ product,favoriteIds,onToggleFavorite ,onRowClick  }) => {
 
 
 // মূল ProductTable কম্পোনেন্ট
-const ProductTable = ({  products, isLoading, error, onRowClick,favoriteIds, onToggleFavorite, currentPage, totalPages, onPageChange, itemsPerPage, setItemsPerPage }) => {
+const ProductTable = ({  products, isLoading, error, onRowClick,favoriteIds, onToggleFavorite, currentPage, totalPages, onPageChange, itemsPerPage, setItemsPerPage,selectedRowIds, onSelectionChange }) => {
   const renderTableContent = () => {
     if (isLoading) {
       return (
@@ -115,7 +117,8 @@ const ProductTable = ({  products, isLoading, error, onRowClick,favoriteIds, onT
       );
     }
     return products.map(product => <ProductRow key={product.id} product={product} onRowClick={onRowClick} favoriteIds={favoriteIds}
-                onToggleFavorite={onToggleFavorite}/>);
+                onToggleFavorite={onToggleFavorite} selectedRowIds={selectedRowIds}
+                onSelectionChange={onSelectionChange}/>);
   };
   
   // যেহেতু সব ইউজার সব কলাম দেখতে পাবে না, আমাদের হেডারটিও ডাইনামিক করতে হবে।
