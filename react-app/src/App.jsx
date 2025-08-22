@@ -30,7 +30,7 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [favoriteIds, setFavoriteIds] = useState([]);
-
+const [favoriteProducts, setFavoriteProducts] = useState([]);
    const [currentView, setCurrentView] = useState('dashboard'); 
 
    const [selectedRowIds, setSelectedRowIds] = useState([]);
@@ -123,15 +123,14 @@ function App() {
         setError(null);
         try {
             // ১. প্রথমে ফেভারিট তালিকা লোড করুন
-            const favResponse = await axios.get(FAVORITES_API_URL, { // << **পরিবর্তন:** '/toggle' বাদ দেওয়া হয়েছে
-                headers: { 'Authorization': `Bearer ${token}` }
+            
+            const favResponse = await axios.get(FAVORITES_API_URL, {
+              headers: { 'Authorization': `Bearer ${token}` }
             });
-            // API থেকে {products: [...]} অবজেক্ট আসছে
             if (favResponse.data && favResponse.data.products) {
-              const favIds = favResponse.data.products.map(p => p.id);
-              setFavoriteIds(favIds);
-            } else {
-                setFavoriteIds([]); // যদি products প্রপার্টি না থাকে, তাহলে খালি অ্যারে সেট করুন
+              const favProducts = favResponse.data.products;
+              setFavoriteProducts(favProducts); // << এই লাইনটি যোগ করা হয়েছে
+              setFavoriteIds(favProducts.map(p => p.id));
             }
             // ২. এরপর প্রোডাক্ট তালিকা লোড করুন
             const params = new URLSearchParams({
@@ -213,6 +212,9 @@ function App() {
                 { product_id: productId }, 
                 { headers: { 'Authorization': `Bearer ${token}` } }
             );
+
+            const favResponse = await axios.get(FAVORITES_API_URL, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (favResponse.data && favResponse.data.products) setFavoriteProducts(favResponse.data.products);
             // সফল হলে কিছু করার দরকার নেই, কারণ UI আগেই আপডেট হয়ে গেছে
         } catch (err) {
             console.error("Failed to update favorite status:", err);
@@ -270,8 +272,9 @@ function App() {
                   )}
 
                   {currentView === 'favorites' && (
-                            <FavoritesPage
-                                token={token} // favorites পেজকে API কল করার জন্য টোকেন লাগবে
+                             <FavoritesPage
+                                favoriteProducts={favoriteProducts} // << নতুন prop যোগ করা হয়েছে
+                                token={token} // এটি আর প্রয়োজন নেই, কিন্তু রাখলেও সমস্যা নেই
                                 favoriteIds={favoriteIds}
                                 onToggleFavorite={handleToggleFavorite}
                                 onRowClick={handleOpenModal}

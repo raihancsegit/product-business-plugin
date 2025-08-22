@@ -1,9 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart as faSolidHeart } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as faRegularHeart } from '@fortawesome/free-regular-svg-icons';
-import {  FAVORITES_API_URL } from '../config';
 // ফেভারিট পেজের জন্য আমরা ProductTable-এর মতো একটি টেবিল ব্যবহার করতে পারি
 // কোড পুনরাবৃত্তি এড়ানোর জন্য, আমরা ProductRow কম্পোনেন্টটি এখানেও ব্যবহার করতে পারি (অথবা একটি শেয়ার্ড কম্পোনেন্ট ফোল্ডারে রাখতে পারি)
 const FavoriteProductRow = ({ product, onRowClick, isFavorite, onToggleFavorite }) => {
@@ -33,36 +30,10 @@ const FavoriteProductRow = ({ product, onRowClick, isFavorite, onToggleFavorite 
 };
 
 
-const FavoritesPage = ({ token, favoriteIds, onToggleFavorite, onRowClick }) => {
-    const [favoriteProducts, setFavoriteProducts] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(null);
-
-    useEffect(() => {
-        const fetchFavoriteProducts = async () => {
-            if (!token) return;
-            setIsLoading(true);
-            setError(null);
-            try {
-                const response = await axios.get(FAVORITES_API_URL, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                setFavoriteProducts(response.data.products || []);
-            } catch (err) {
-                setError("Failed to load favorite products.");
-                console.error(err);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        
-        fetchFavoriteProducts();
-    }, [token, favoriteIds]); // favoriteIds পরিবর্তন হলেও যেন তালিকা রিফ্রেশ হয়
+const FavoritesPage = ({ favoriteProducts, favoriteIds, onToggleFavorite, onRowClick }) => {
 
     const renderContent = () => {
-        if (isLoading) return <p className="text-center p-8">Loading favorites...</p>;
-        if (error) return <p className="text-center p-8 text-red-500">{error}</p>;
-        if (favoriteProducts.length === 0) return <p className="text-center p-8">You have no favorite products yet.</p>;
+       if (favoriteProducts.length === 0) return <p className="text-center p-8">You have no favorite products yet.</p>;
 
         return (
             <table className="w-full divide-y divide-gray-200">
