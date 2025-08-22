@@ -8,9 +8,11 @@ import Login from './components/Login';
 import ProductModal from './components/ProductModal';
 import FavoritesPage from './components/FavoritesPage'; 
 import MyListPage from './components/MyListPage'; 
+import useFullscreenMode from './hooks/useFullscreenMode';
 import { PRODUCTS_API_URL, FAVORITES_API_URL,MYLIST_API_URL } from './config';
 
 function App() {
+   useFullscreenMode();
   const [token, setToken] = useState(localStorage.getItem('authToken'));
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -42,7 +44,7 @@ function App() {
             document.body.classList.remove('psp-dashboard-active');
         };
     }, []);
-    
+
     const handleViewChange = (view) => {
         setCurrentView(view);
     };

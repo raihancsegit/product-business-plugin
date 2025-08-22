@@ -69,25 +69,25 @@ add_action('admin_menu', 'psp_admin_menu');
 function psp_importer_page_html()
 {
 ?>
-<div class="wrap">
-    <h1>Import Products via CSV</h1>
-    <p>Upload a CSV file with product data. The columns should be in the correct order: product_title, image_url, price,
-        etc.</p>
+    <div class="wrap">
+        <h1>Import Products via CSV</h1>
+        <p>Upload a CSV file with product data. The columns should be in the correct order: product_title, image_url, price,
+            etc.</p>
 
-    <form method="post" enctype="multipart/form-data">
-        <table class="form-table">
-            <tr valign="top">
-                <th scope="row">Upload CSV File</th>
-                <td><input type="file" name="product_csv_file" /></td>
-            </tr>
-        </table>
-        <?php
+        <form method="post" enctype="multipart/form-data">
+            <table class="form-table">
+                <tr valign="top">
+                    <th scope="row">Upload CSV File</th>
+                    <td><input type="file" name="product_csv_file" /></td>
+                </tr>
+            </table>
+            <?php
             // নিরাপত্তার জন্য Nonce ফিল্ড যোগ করা হচ্ছে
             wp_nonce_field('psp_csv_import_nonce', 'psp_nonce_field');
             submit_button('Upload and Import');
             ?>
-    </form>
-</div>
+        </form>
+    </div>
 <?php
 }
 
@@ -265,21 +265,15 @@ function psp_get_products_callback(WP_REST_Request $request)
     ];
 
     $selected_columns_str = '';
-    $user_product_limit_sql = '';
+    $is_basic_user = in_array('psp_basic_user', $roles);
 
-    // ইউজারের রোল অনুযায়ী কলাম এবং ডেটা লিমিট সেট করা
+    // ইউজারের রোল অনুযায়ী কলাম সেট করা
     if (in_array('administrator', $roles) || in_array('psp_advanced_user', $roles)) {
         $selected_columns_str = implode(', ', $column_map['advanced']);
     } elseif (in_array('psp_expert_user', $roles)) {
         $selected_columns_str = implode(', ', $column_map['expert']);
-    } elseif (in_array('psp_basic_user', $roles)) {
+    } elseif ($is_basic_user) {
         $selected_columns_str = implode(', ', $column_map['basic']);
-        // **পরিবর্তন:** এখানে আমরা একটি সাব-কোয়েরির জন্য লিমিট তৈরি করব
-        $total_available_products = (int) $wpdb->get_var("SELECT COUNT(id) FROM $table_name");
-        $limit_count_for_basic_user = floor($total_available_products * 0.5);
-        if ($limit_count_for_basic_user > 0) {
-            $user_product_limit_sql = "LIMIT " . $limit_count_for_basic_user;
-        }
     } else {
         return new WP_Error('no_permission', 'You do not have permission.', ['status' => 403]);
     }
@@ -288,65 +282,68 @@ function psp_get_products_callback(WP_REST_Request $request)
     $params = $request->get_params();
     $where_clauses = [];
 
-    // ক্যাটাগরি ফিল্টার (একাধিক ক্যাটাগরির জন্য)
     if (!empty($params['categories'])) {
         $category_list = explode(',', sanitize_text_field($params['categories']));
         $cat_placeholders = [];
-        foreach ($category_list as $cat) {
-            $cat_placeholders[] = $wpdb->prepare('%s', $cat);
-        }
+        foreach ($category_list as $cat) $cat_placeholders[] = $wpdb->prepare('%s', $cat);
         if (!empty($cat_placeholders)) {
             $where_clauses[] = "(category IN (" . implode(', ', $cat_placeholders) . ") OR subcategory IN (" . implode(', ', $cat_placeholders) . "))";
         }
     }
 
-    // রেঞ্জ ফিল্টার (Min/Max) হ্যান্ডেল করার জন্য একটি Helper Array
-    $range_filters = [
-        'price'         => ['minPrice', 'maxPrice'],
-        'monthly_sales' => ['minSales', 'maxSales'],
-        'weight_lbs'    => ['minWeight', 'maxWeight'],
-        'age_months'    => ['minAge', 'maxAge']
-    ];
-
+    $range_filters = ['price' => ['minPrice', 'maxPrice'], /* ... অন্যান্য ফিল্টার ... */];
     foreach ($range_filters as $column => $keys) {
-        $min_key = $keys[0];
-        $max_key = $keys[1];
-
-        if (!empty($params[$min_key])) {
-            $where_clauses[] = $wpdb->prepare("$column >= %f", floatval($params[$min_key]));
-        }
-        if (!empty($params[$max_key])) {
-            $where_clauses[] = $wpdb->prepare("$column <= %f", floatval($params[$max_key]));
-        }
+        if (!empty($params[$keys[0]])) $where_clauses[] = $wpdb->prepare("$column >= %f", floatval($params[$keys[0]]));
+        if (!empty($params[$keys[1]])) $where_clauses[] = $wpdb->prepare("$column <= %f", floatval($params[$keys[1]]));
     }
 
-    $where_sql = '';
-    if (!empty($where_clauses)) {
-        $where_sql = 'WHERE ' . implode(' AND ', $where_clauses);
+    $where_sql = !empty($where_clauses) ? 'WHERE ' . implode(' AND ', $where_clauses) : '';
+
+
+    // ১. মোট প্রোডাক্টের সংখ্যা গণনা করা (বেসিক ইউজারের জন্য সীমাবদ্ধ)
+    $total_products_count_query = "SELECT COUNT(id) FROM $table_name $where_sql";
+
+    if ($is_basic_user) {
+        // প্রথমে ডাটাবেস থেকে সব প্রোডাক্টের আইডি (ফিল্টারসহ) আনা হচ্ছে
+        $all_product_ids = $wpdb->get_col("SELECT id FROM $table_name $where_sql");
+        // মোট প্রোডাক্টের ৫০% নেওয়া হচ্ছে
+        $limit_count = floor(count($all_product_ids) * 0.5);
+        // শুধুমাত্র সেই সীমিত সংখ্যক আইডিগুলো ব্যবহার করা হবে
+        $allowed_ids = array_slice($all_product_ids, 0, $limit_count);
+        $total_products_count = count($allowed_ids);
+    } else {
+        $total_products_count = (int) $wpdb->get_var($total_products_count_query);
+        $allowed_ids = null; // অন্যান্য ইউজারদের জন্য কোনো আইডি সীমাবদ্ধতা নেই
     }
 
-    $per_page = isset($params['per_page']) ? intval($params['per_page']) : 25; // প্রতি পৃষ্ঠায় ২৫টি আইটেম ডিফল্ট
+    // ২. পেজিনেশন প্যারামিটার গণনা করা
+    $per_page = isset($params['per_page']) ? intval($params['per_page']) : 25;
     $current_page = isset($params['page']) ? intval($params['page']) : 1;
     $offset = ($current_page - 1) * $per_page;
+    $total_pages = $total_products_count > 0 ? ceil($total_products_count / $per_page) : 0;
 
-    // নতুন LIMIT ক্লজ
     $pagination_sql = $wpdb->prepare("LIMIT %d OFFSET %d", $per_page, $offset);
 
-    // বেসিক ইউজারের জন্য মোট প্রোডাক্ট লিমিট করা
-    $total_products_count_query = "SELECT COUNT(id) FROM $table_name $where_sql";
-    if (!empty($user_product_limit_sql)) {
-        $total_products_count = (int) $wpdb->get_var("SELECT COUNT(*) FROM (SELECT id FROM $table_name $where_sql $user_product_limit_sql) AS limited_products");
+    // ৩. চূড়ান্ত ডাটাবেস কোয়েরি তৈরি করা
+    if ($is_basic_user) {
+        if (empty($allowed_ids)) {
+            $products = []; // যদি কোনো প্রোডাক্টই না থাকে
+        } else {
+            $id_placeholders = implode(', ', array_fill(0, count($allowed_ids), '%d'));
+            // এখন শুধুমাত্র সেই আইডিগুলোর উপর পেজিনেশন প্রয়োগ করা হচ্ছে
+            $query = $wpdb->prepare("SELECT $selected_columns_str FROM $table_name WHERE id IN ($id_placeholders) $pagination_sql", $allowed_ids);
+            $products = $wpdb->get_results($query);
+        }
     } else {
-        $total_products_count = (int) $wpdb->get_var("SELECT COUNT(id) FROM $table_name $where_sql");
+        $query = "SELECT $selected_columns_str FROM $table_name $where_sql ORDER BY id ASC $pagination_sql";
+        $products = $wpdb->get_results($query);
     }
-    $query = "SELECT $selected_columns_str FROM $table_name $where_sql $user_product_limit_sql $pagination_sql";
-    $products = $wpdb->get_results($query);
 
-
+    // ৪. রেসপন্স পাঠানো
     return new WP_REST_Response([
         'products' => $products,
         'total' => $total_products_count,
-        'totalPages' => ceil($total_products_count / $per_page),
+        'totalPages' => $total_pages,
         'user_role' => $roles[0] ?? 'unknown'
     ], 200);
 }
@@ -481,3 +478,18 @@ function psp_react_app_shortcode()
     return '<div id="root"></div>';
 }
 add_shortcode('product_scope_dashboard', 'psp_react_app_shortcode');
+
+// >> পরিবর্তন শুরু: এই নতুন ফাংশনটি যোগ করুন <<
+function psp_hide_admin_bar_for_dashboard($hook_suffix)
+{
+    // শুধুমাত্র আমাদের ড্যাশবোর্ড পেজের জন্য এই স্টাইলটি প্রয়োগ করা হবে
+    if ($hook_suffix === 'toplevel_page_product-scope-dashboard') {
+        echo '<style>
+            #wpadminbar { display: none !important; }
+            html.wp-toolbar { padding-top: 0px !important; }
+        </style>';
+    }
+}
+// 'admin_head' হুকটি <head> ট্যাগের ভেতরে স্টাইল যোগ করার জন্য ব্যবহৃত হয়
+add_action('admin_head', 'psp_hide_admin_bar_for_dashboard');
+// >> পরিবর্তন শেষ

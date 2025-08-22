@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHeart as faSolidHeart } from '@fortawesome/free-solid-svg-icons';
+import { faHeart as faRegularHeart } from '@fortawesome/free-regular-svg-icons';
 import {  FAVORITES_API_URL } from '../config';
 // ফেভারিট পেজের জন্য আমরা ProductTable-এর মতো একটি টেবিল ব্যবহার করতে পারি
 // কোড পুনরাবৃত্তি এড়ানোর জন্য, আমরা ProductRow কম্পোনেন্টটি এখানেও ব্যবহার করতে পারি (অথবা একটি শেয়ার্ড কম্পোনেন্ট ফোল্ডারে রাখতে পারি)
@@ -7,7 +10,12 @@ const FavoriteProductRow = ({ product, onRowClick, isFavorite, onToggleFavorite 
     return (
         <tr onClick={() => onRowClick(product)} className="hover:bg-gray-50 transition-colors cursor-pointer">
             <td className="px-3 py-4 text-center" onClick={(e) => { e.stopPropagation(); onToggleFavorite(product.id); }}>
-                <i className={`${isFavorite ? 'fa-solid text-red-500' : 'fa-regular'} fa-heart cursor-pointer hover:text-red-500`}></i>
+               
+            <FontAwesomeIcon 
+                icon={isFavorite ? faSolidHeart : faRegularHeart} 
+             className={`${isFavorite ? 'text-red-500' : 'text-gray-400'} cursor-pointer hover:text-red-500`} 
+             size="xs"
+             />
             </td>
             <td className="px-4 py-4">
                 <div className="flex items-center space-x-3">

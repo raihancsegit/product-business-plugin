@@ -65,9 +65,10 @@ const ProductRow = ({ product,favoriteIds,onToggleFavorite ,onRowClick ,selected
                 onToggleFavorite(product.id);
             }}>
               <FontAwesomeIcon 
-                                                  icon={isFavorite ? faSolidHeart : faRegularHeart} 
-                                                  className={`${isFavorite ? 'text-red-500' : 'text-gray-400'} cursor-pointer hover:text-red-500`} 
-                                                  />
+                   icon={isFavorite ? faSolidHeart : faRegularHeart} 
+                   className={`${isFavorite ? 'text-red-500' : 'text-gray-400'} cursor-pointer hover:text-red-500`} 
+                    size="xs"
+              />
             </td>
       <td className="px-4 py-4" style={{ width: '500px' }}>
         <div className="flex items-center space-x-3">

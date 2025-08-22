@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHeart as faSolidHeart } from '@fortawesome/free-solid-svg-icons';
+import { faHeart as faRegularHeart } from '@fortawesome/free-regular-svg-icons';
 
 // API URL - এটি App.jsx থেকেও prop হিসেবে পাস করা যেতে পারে, তবে আপাতত এখানেই রাখছি
 import { MYLIST_API_URL } from '../config';
@@ -16,7 +19,11 @@ const MyListProductRow = ({ product, onRowClick, onToggleFavorite, isFavorite })
                     }}
                     className="inline-block"
                 >
-                    <i className={`${isFavorite ? 'fa-solid text-red-500' : 'fa-regular'} fa-heart cursor-pointer hover:text-red-500`}></i>
+                    <FontAwesomeIcon 
+                        icon={isFavorite ? faSolidHeart : faRegularHeart} 
+                        className={`${isFavorite ? 'text-red-500' : 'text-gray-400'} cursor-pointer hover:text-red-500`} 
+                        size="xs"
+                    />
                 </div>
             </td>
             <td className="px-4 py-4">

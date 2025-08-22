@@ -27,6 +27,7 @@ const ProductModal = ({ product, onClose,isFavorite, onToggleFavorite }) => {
                                 <FontAwesomeIcon 
                                     icon={isFavorite ? faSolidHeart : faRegularHeart} 
                                     className={`${isFavorite ? 'text-red-500' : 'text-gray-400'} cursor-pointer hover:text-red-500`} 
+                                     size="xs"
                                     />
                             </button>
                            <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 rounded-lg">
