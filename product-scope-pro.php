@@ -69,25 +69,25 @@ add_action('admin_menu', 'psp_admin_menu');
 function psp_importer_page_html()
 {
 ?>
-    <div class="wrap">
-        <h1>Import Products via CSV</h1>
-        <p>Upload a CSV file with product data. The columns should be in the correct order: product_title, image_url, price,
-            etc.</p>
+<div class="wrap">
+    <h1>Import Products via CSV</h1>
+    <p>Upload a CSV file with product data. The columns should be in the correct order: product_title, image_url, price,
+        etc.</p>
 
-        <form method="post" enctype="multipart/form-data">
-            <table class="form-table">
-                <tr valign="top">
-                    <th scope="row">Upload CSV File</th>
-                    <td><input type="file" name="product_csv_file" /></td>
-                </tr>
-            </table>
-            <?php
+    <form method="post" enctype="multipart/form-data">
+        <table class="form-table">
+            <tr valign="top">
+                <th scope="row">Upload CSV File</th>
+                <td><input type="file" name="product_csv_file" /></td>
+            </tr>
+        </table>
+        <?php
             // নিরাপত্তার জন্য Nonce ফিল্ড যোগ করা হচ্ছে
             wp_nonce_field('psp_csv_import_nonce', 'psp_nonce_field');
             submit_button('Upload and Import');
             ?>
-        </form>
-    </div>
+    </form>
+</div>
 <?php
 }
 
@@ -429,53 +429,52 @@ function psp_enqueue_react_app_assets()
     // শুধুমাত্র যে পেজে আমাদের শর্টকোডটি আছে, সেখানেই এই ফাইলগুলো লোড হবে
     if (is_singular() && has_shortcode(get_post()->post_content, 'product_scope_dashboard')) {
 
-        $react_app_dist_path = plugin_dir_path(__FILE__) . 'react-app/dist/';
+        $script_handle = 'psp-react-app';
         $react_app_dist_url = plugin_dir_url(__FILE__) . 'react-app/dist/';
 
-        // Vite manifest.json ফাইল ব্যবহার করে সঠিক ফাইলের নাম খুঁজে বের করে
-        $manifest_path = $react_app_dist_path . 'manifest.json';
+        // Vite 4+ থেকে manifest.json ফাইলটি dist ফোল্ডারের ভেতরে .vite ফোল্ডারে থাকে
+        // তবে নতুন কনফিগারেশনে এটি সরাসরি dist ফোল্ডারেও থাকতে পারে। আমরা দুটোই চেক করব।
+        $manifest_path = plugin_dir_path(__FILE__) . 'react-app/dist/manifest.json';
+        if (!file_exists($manifest_path)) {
+            $manifest_path = plugin_dir_path(__FILE__) . 'react-app/dist/.vite/manifest.json';
+        }
+
         if (file_exists($manifest_path)) {
             $manifest_data = file_get_contents($manifest_path);
             if ($manifest_data) {
                 $manifest = json_decode($manifest_data, true);
 
-                // মূল JS ফাইল (entry) খুঁজে বের করা
-                $js_entry_file = null;
-                if (isset($manifest['index.html']['file'])) {
-                    $js_entry_file = $manifest['index.html']['file'];
-                } elseif (isset($manifest['main.jsx']['file'])) {
-                    $js_entry_file = $manifest['main.jsx']['file'];
-                }
+                // React অ্যাপের মূল JS ফাইল (entry point)
+                $js_entry_key = 'src/main.jsx';
 
-                if ($js_entry_file) {
-                    // CSS ফাইল লোড করা
-                    $css_files = [];
-                    if (isset($manifest['index.html']['css'])) {
-                        $css_files = $manifest['index.html']['css'];
-                    } elseif (isset($manifest['main.jsx']['css'])) {
-                        $css_files = $manifest['main.jsx']['css'];
-                    }
-
-                    foreach ($css_files as $index => $css_file) {
-                        wp_enqueue_style('psp-react-app-css-' . $index, $react_app_dist_url . $css_file);
-                    }
+                if (isset($manifest[$js_entry_key])) {
+                    $entry = $manifest[$js_entry_key];
 
                     // JS ফাইল লোড করা
-                    wp_enqueue_script('psp-react-app-js', $react_app_dist_url . $js_entry_file, [], '1.0', true);
+                    wp_enqueue_script($script_handle, $react_app_dist_url . $entry['file'], [], null, true);
 
-                    // React অ্যাপে ডেটা পাঠানোর জন্য
-                    wp_localize_script('psp-react-app-js', 'psp_object', [
-                        'root_url' => home_url(),
+                    // সংশ্লিষ্ট CSS ফাইল লোড করা
+                    if (isset($entry['css'])) {
+                        foreach ($entry['css'] as $index => $css_file) {
+                            wp_enqueue_style('psp-react-app-css-' . $index, $react_app_dist_url . $css_file);
+                        }
+                    }
+
+                    // React অ্যাপে ডেটা (URL, Nonce) পাঠানোর জন্য
+                    wp_localize_script($script_handle, 'psp_object', [
+                        'root_url'       => home_url(),
                         'api_base_url'   => rest_url('productscope/v1/'),
-                        'nonce'   => wp_create_nonce('wp_rest')
+                        'nonce'          => wp_create_nonce('wp_rest')
                     ]);
                 }
             }
+        } else {
+            // যদি manifest.json খুঁজে না পাওয়া যায়, একটি এরর মেসেজ দেখানো ভালো
+            wp_die('React app manifest.json not found. Please run "npm run build" in the react-app directory.');
         }
     }
 }
 add_action('wp_enqueue_scripts', 'psp_enqueue_react_app_assets');
-
 // React অ্যাপের জন্য শর্টকোড
 function psp_react_app_shortcode()
 {

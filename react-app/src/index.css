@@ -211,3 +211,28 @@
     --tw-bg-opacity: 1;
     background-color: rgb(30 58 138);
 }
+
+#root, #app {
+  width: 100%;
+  height: 100vh; /* ভিউপোর্টের সম্পূর্ণ উচ্চতা */
+  max-width: none !important; /* থিমের max-width ওভাররাইড করা হচ্ছে */
+  margin: 0 !important; /* থিমের margin ওভাররাইড করা হচ্ছে */
+}
+
+/* 
+  যদি উপরের কোডে কাজ না হয়, তাহলে আরও নির্দিষ্টভাবে টার্গেট করতে হবে।
+  ওয়ার্ডপ্রেস .is-layout-constrained ক্লাসটি body বা অন্য কোনো র‍্যাপারে যোগ করে।
+*/
+.is-layout-constrained #root {
+  max-width: none !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* 
+  কিছু থিম #content বা #primary এর মতো id ব্যবহার করে। 
+  প্রয়োজনে এগুলোও ওভাররাইড করা যেতে পারে।
+*/
+#content #root, #primary #root {
+  max-width: none !important;
+}

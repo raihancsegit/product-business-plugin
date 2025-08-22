@@ -1,21 +1,16 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { watch } from 'vite-plugin-watch'; // নতুন প্লাগইন ইম্পোর্ট
 
+// https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [
-    react(),
-    // watch প্লাগইনটি এখানে কনফিগার করা হচ্ছে
-    watch({
-      pattern: 'src/**/*', // src ফোল্ডারের যেকোনো ফাইল পরিবর্তন হলে
-      command: 'npm run build', // 'npm run build' কমান্ডটি আবার চালাও
-    }),
-  ],
+  plugins: [react()],
   build: {
-    outDir: 'dist', // বিল্ড ফাইলগুলো dist ফোল্ডারে যাবে
-    manifest: true, // manifest.json ফাইল তৈরি করবে
+    // 빌্ড করা ফাইলগুলো dist ফোল্ডারে যাবে
+    outDir: 'dist',
+    // manifest.json ফাইল তৈরি করবে যা ওয়ার্ডপ্রেসের জন্য অপরিহার্য
+    manifest: true,
     rollupOptions: {
-      // input main.jsx to make sure it's the entry point
+      // আমাদের React অ্যাপের এন্ট্রি পয়েন্ট
       input: '/src/main.jsx',
     },
   },

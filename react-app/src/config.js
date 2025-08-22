@@ -1,5 +1,9 @@
-const API_BASE_URL = window.psp_object?.api_base_url || '/wp-json/productscope/v1/';
-const ROOT_URL = window.psp_object?.root_url || '';
+// src/config.js
+// এই psp_object ভেরিয়েবলটি ওয়ার্ডপ্রেস থেকে আসবে
+const psp_object = window.psp_object || {};
+
+const API_BASE_URL = psp_object.api_base_url || '/wp-json/productscope/v1/';
+const ROOT_URL = psp_object.root_url || '';
 
 export const PRODUCTS_API_URL = `${API_BASE_URL}products`;
 export const FAVORITES_API_URL = `${API_BASE_URL}favorites`;
