@@ -1,7 +1,7 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
-const Header = (onSearchChange, searchQuery, userDisplayName) => {
+const Header = ({onSearchChange, searchQuery, userDisplayName}) => {
     const avatarUrl = userDisplayName
     ? `https://ui-avatars.com/api/?name=${userDisplayName.replace(' ', '+')}&background=1e3a8a&color=fff&bold=true`
     : 'https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg';
