@@ -1,9 +1,17 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHome, faHeart, faBookmark, faCog, faQuestionCircle, faSignOutAlt, faBars, faChevronRight, faChartLine } from '@fortawesome/free-solid-svg-icons';
-const Sidebar = ({ isCollapsed, onToggle, onLogout, currentView, onViewChange }) => {
+const Sidebar = ({ isCollapsed, onToggle, onLogout, currentView, onViewChange, userDisplayName, userRole }) => {
   const sidebarClasses = isCollapsed ? "w-16" : "w-64";
-
+   let accessText = "Limited Access";
+    let accessColor = "text-yellow-600";
+    let upgradeText = <a href="/upgrade" className="text-blue-500 hover:underline">Upgrade to Full Access</a>;
+    
+    if (userRole === 'administrator' || userRole === 'psp_advanced_user' || userRole === 'psp_expert_user') {
+        accessText = "Full Access";
+        accessColor = "text-green-600";
+        upgradeText = null; // Full access থাকলে আপগ্রেড টেক্সট দেখানোর দরকার নেই
+    }
   return (
     <aside id="sidebar" className={`bg-white border-r ${sidebarClasses} flex-shrink-0 transition-all duration-300 flex flex-col`}>
       <div id="sidebar-header" className={`flex items-center p-4 border-b ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
@@ -67,20 +75,21 @@ const Sidebar = ({ isCollapsed, onToggle, onLogout, currentView, onViewChange })
           </div>
         )}
 
-        {!isCollapsed && (
-          <div className="border-t p-4">
-            <div className="flex items-center space-x-3">
-              <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg" alt="User Avatar" className="w-8 h-8 rounded-full" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">Sarah Johnson</p>
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <p className="text-xs text-green-600 font-medium">Full Access</p>
+         {!isCollapsed && (
+                <div className="border-t p-4">
+                    <div className="flex items-center space-x-3">
+                        <img src={`https://ui-avatars.com/api/?name=${userDisplayName.replace(' ', '+')}&background=1e3a8a&color=fff`} alt="User Avatar" className="w-8 h-8 rounded-full" />
+                        <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">{userDisplayName}</p>
+                            <div className="flex items-center space-x-2">
+                                <div className={`w-2 h-2 ${accessColor === 'text-green-600' ? 'bg-green-500' : 'bg-yellow-500'} rounded-full`}></div>
+                                <p className={`text-xs font-medium ${accessColor}`}>{accessText}</p>
+                            </div>
+                            {upgradeText && <p className="text-xs mt-1">{upgradeText}</p>}
+                        </div>
+                    </div>
                 </div>
-              </div>
-            </div>
-          </div>
-        )}
+            )}
       </div>
     </aside>
   );

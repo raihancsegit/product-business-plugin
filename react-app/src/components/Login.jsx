@@ -14,9 +14,10 @@ const Login = ({ onLoginSuccess }) => {
         username,
         password,
       });
-      const { token, user_display_name } = response.data;
+      const { token, user_display_name, user_nicename } = response.data;
       // টোকেনটি ব্রাউজারের localStorage-এ সেভ করা হচ্ছে
       localStorage.setItem('authToken', token);
+       localStorage.setItem('userDisplayName', user_display_name || user_nicename || 'User');
       onLoginSuccess(user_display_name);
     } catch (err) {
       setError('Invalid username or password.');

@@ -69,25 +69,25 @@ add_action('admin_menu', 'psp_admin_menu');
 function psp_importer_page_html()
 {
 ?>
-<div class="wrap">
-    <h1>Import Products via CSV</h1>
-    <p>Upload a CSV file with product data. The columns should be in the correct order: product_title, image_url, price,
-        etc.</p>
+    <div class="wrap">
+        <h1>Import Products via CSV</h1>
+        <p>Upload a CSV file with product data. The columns should be in the correct order: product_title, image_url, price,
+            etc.</p>
 
-    <form method="post" enctype="multipart/form-data">
-        <table class="form-table">
-            <tr valign="top">
-                <th scope="row">Upload CSV File</th>
-                <td><input type="file" name="product_csv_file" /></td>
-            </tr>
-        </table>
-        <?php
+        <form method="post" enctype="multipart/form-data">
+            <table class="form-table">
+                <tr valign="top">
+                    <th scope="row">Upload CSV File</th>
+                    <td><input type="file" name="product_csv_file" /></td>
+                </tr>
+            </table>
+            <?php
             // নিরাপত্তার জন্য Nonce ফিল্ড যোগ করা হচ্ছে
             wp_nonce_field('psp_csv_import_nonce', 'psp_nonce_field');
             submit_button('Upload and Import');
             ?>
-    </form>
-</div>
+        </form>
+    </div>
 <?php
 }
 
@@ -304,6 +304,11 @@ function psp_get_products_callback(WP_REST_Request $request)
     foreach ($range_filters as $column => $keys) {
         if (!empty($params[$keys[0]])) $where_clauses[] = $wpdb->prepare("$column >= %f", floatval($params[$keys[0]]));
         if (!empty($params[$keys[1]])) $where_clauses[] = $wpdb->prepare("$column <= %f", floatval($params[$keys[1]]));
+    }
+
+    if (!empty($params['search'])) {
+        $search_term = '%' . $wpdb->esc_like(sanitize_text_field($params['search'])) . '%';
+        $where_clauses[] = $wpdb->prepare("(product_title LIKE %s OR product_subtitle LIKE %s)", $search_term, $search_term);
     }
 
     $where_sql = !empty($where_clauses) ? 'WHERE ' . implode(' AND ', $where_clauses) : '';

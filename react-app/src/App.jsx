@@ -23,6 +23,7 @@ function App() {
     const [itemsPerPage, setItemsPerPage] = useState(3);
     const [userRole, setUserRole] = useState(''); 
     const [totalUnlimited, setTotalUnlimited] = useState(0); 
+    const [userDisplayName, setUserDisplayName] = useState(localStorage.getItem('userDisplayName') || '');
   
   // ফিল্টার এবং সাইডবারের জন্য নতুন স্টেট
   const [filters, setFilters] = useState({});
@@ -39,6 +40,8 @@ const [favoriteProducts, setFavoriteProducts] = useState([]);
 
    const [selectedRowIds, setSelectedRowIds] = useState([]);
      const [myListProducts, setMyListProducts] = useState([]);
+
+     const [searchQuery, setSearchQuery] = useState('');
 
    useEffect(() => {
         // কম্পোনেন্ট মাউন্ট হলে body-তে ক্লাস যোগ করুন
@@ -66,11 +69,14 @@ const [favoriteProducts, setFavoriteProducts] = useState([]);
 
   const handleLoginSuccess = () => {
     setToken(localStorage.getItem('authToken'));
+    setUserDisplayName(localStorage.getItem('userDisplayName') || '');
   };
   
   const handleLogout = () => {
     localStorage.removeItem('authToken');
+     localStorage.removeItem('userDisplayName');
     setToken(null);
+    setUserDisplayName('');
   };
 
   const toggleSidebar = () => {
@@ -85,6 +91,11 @@ const [favoriteProducts, setFavoriteProducts] = useState([]);
     setFilters(activeFilters);
     setSelectedRowIds([]);
     setCurrentPage(1);
+  };
+
+  const handleSearchChange = (query) => {
+    setSearchQuery(query);
+    setCurrentPage(1); // সার্চ করলে প্রথম পৃষ্ঠায় ফিরে যান
   };
 
     const handleAddToList = async () => {
@@ -143,6 +154,7 @@ const [favoriteProducts, setFavoriteProducts] = useState([]);
                 ...filters,
                 page: currentPage,
                 per_page: itemsPerPage,
+                search: searchQuery,
             }).toString();
             
             const prodResponse = await axios.get(`${PRODUCTS_API_URL}?${params}`, {
@@ -220,7 +232,7 @@ const [favoriteProducts, setFavoriteProducts] = useState([]);
 
     fetchMyListData();
 
-  }, [token, filters, currentPage, itemsPerPage, currentView]);
+  }, [token, filters, currentPage, itemsPerPage, currentView,searchQuery]);
 
 
   const handleToggleFavorite = async (productId) => {
@@ -271,9 +283,15 @@ const [favoriteProducts, setFavoriteProducts] = useState([]);
         onLogout={handleLogout}
         currentView={currentView} 
         onViewChange={handleViewChange}  
+        userDisplayName={userDisplayName} // << নতুন prop
+        userRole={userRole} 
       />
       <main className="flex-1 overflow-auto">
-        <Header />
+        <Header 
+          onSearchChange={handleSearchChange}
+          searchQuery={searchQuery}
+          userDisplayName={userDisplayName}
+        />
         <div className="p-6">
           <div className="max-w-7xl mx-auto">
              {currentView === 'dashboard' && (
