@@ -209,6 +209,9 @@ const ProductTable = ({  products, isLoading, error, onRowClick,favoriteIds, onT
                 onPageChange={onPageChange}
                 itemsPerPage={itemsPerPage}
                 setItemsPerPage={setItemsPerPage}
+                 userRole={userRole}
+                totalProducts={totalProducts}
+                totalUnlimited={totalUnlimited}
 
             />
         

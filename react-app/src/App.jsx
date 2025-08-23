@@ -262,7 +262,7 @@ const [favoriteProducts, setFavoriteProducts] = useState([]);
   if (!token) {
     return <Login onLoginSuccess={handleLoginSuccess} />;
   }
-  const totalProductsCount = products.length;
+
   return (
     <div id="app" className="font-inter bg-brand-light flex h-screen">
       <Sidebar 
@@ -294,7 +294,7 @@ const [favoriteProducts, setFavoriteProducts] = useState([]);
                         selectedRowIds={selectedRowIds}
                         onSelectionChange={handleRowSelectionChange}
                         userRole={userRole}
-                        totalProducts={totalProductsCount} 
+                         totalProducts={products.length}  
                         totalUnlimited={totalUnlimited}
                     />
                   </>

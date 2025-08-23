@@ -7,7 +7,7 @@ const useFullscreenMode = () => {
     style.id = 'psp-fullscreen-styles'; // একটি ইউনিক আইডি দেওয়া হলো
     style.innerHTML = `
       /* ওয়ার্ডপ্রেস অ্যাডমিন বার এবং থিমের হেডার/ফুটার লুকানো */
-      #wpadminbar, #header, .header, #footer, .footer, #colophon {
+      #wpadminbar,  #colophon {
         display: none !important;
       }
 

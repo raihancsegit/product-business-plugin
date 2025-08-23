@@ -12,7 +12,7 @@ const Sidebar = ({ isCollapsed, onToggle, onLogout, currentView, onViewChange })
             <div className="w-8 h-8 bg-brand-blue rounded-lg flex items-center justify-center">
                <FontAwesomeIcon icon={faChartLine} className="text-white text-sm" />
             </div>
-            <h1 className="text-lg font-bold text-brand-blue">ProductScope Pro</h1>
+            <h1 className="text-sm font-bold text-brand-blue">ProductScope Pro</h1>
           </div>
         )}
         <button onClick={onToggle} className="p-1 rounded-lg hover:bg-gray-100">

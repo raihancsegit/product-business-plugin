@@ -69,25 +69,25 @@ add_action('admin_menu', 'psp_admin_menu');
 function psp_importer_page_html()
 {
 ?>
-    <div class="wrap">
-        <h1>Import Products via CSV</h1>
-        <p>Upload a CSV file with product data. The columns should be in the correct order: product_title, image_url, price,
-            etc.</p>
+<div class="wrap">
+    <h1>Import Products via CSV</h1>
+    <p>Upload a CSV file with product data. The columns should be in the correct order: product_title, image_url, price,
+        etc.</p>
 
-        <form method="post" enctype="multipart/form-data">
-            <table class="form-table">
-                <tr valign="top">
-                    <th scope="row">Upload CSV File</th>
-                    <td><input type="file" name="product_csv_file" /></td>
-                </tr>
-            </table>
-            <?php
+    <form method="post" enctype="multipart/form-data">
+        <table class="form-table">
+            <tr valign="top">
+                <th scope="row">Upload CSV File</th>
+                <td><input type="file" name="product_csv_file" /></td>
+            </tr>
+        </table>
+        <?php
             // নিরাপত্তার জন্য Nonce ফিল্ড যোগ করা হচ্ছে
             wp_nonce_field('psp_csv_import_nonce', 'psp_nonce_field');
             submit_button('Upload and Import');
             ?>
-        </form>
-    </div>
+    </form>
+</div>
 <?php
 }
 
@@ -211,7 +211,16 @@ function psp_get_favorites(WP_REST_Request $request)
 
     $products = $wpdb->get_results($query);
 
-    return new WP_REST_Response(['products' => $products], 200);
+    $user_id = get_current_user_id();
+    $user = get_user_by('id', $user_id);
+    $roles = (array) $user->roles;
+
+    return new WP_REST_Response([
+        'products' => $products,
+        'user_role' => $roles[0] ?? 'unknown',
+        'total' => count($products), // ফেভারিট লিস্টের মোট প্রোডাক্ট
+        'total_unlimited' => count($products) // ফেভারিটের ক্ষেত্রে total এবং total_unlimited একই
+    ], 200);
 }
 
 // একটি প্রোডাক্টকে ফেভারিট হিসেবে যোগ বা বাদ দেওয়ার ফাংশন
@@ -393,7 +402,16 @@ function psp_get_mylist(WP_REST_Request $request)
 
     $products = $wpdb->get_results($query);
 
-    return new WP_REST_Response(['products' => $products], 200);
+    $user_id = get_current_user_id();
+    $user = get_user_by('id', $user_id);
+    $roles = (array) $user->roles;
+
+    return new WP_REST_Response([
+        'products' => $products,
+        'user_role' => $roles[0] ?? 'unknown',
+        'total' => count($products),
+        'total_unlimited' => count($products)
+    ], 200);
 }
 
 // "My List"-এ প্রোডাক্ট যোগ করার ফাংশন
