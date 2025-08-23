@@ -2,52 +2,82 @@ import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart as faSolidHeart } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as faRegularHeart } from '@fortawesome/free-regular-svg-icons';
-const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, setItemsPerPage }) => {
-    if (totalPages <= 1) {
-        return null; // যদি এক পৃষ্ঠার কম ডেটা থাকে, পেজিনেশন দেখানোর দরকার নেই।
+const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, setItemsPerPage, userRole, totalProducts, totalUnlimited }) => {
+    
+    // তথ্য টেক্সট রেন্ডার করার জন্য একটি ভেরিয়েবল
+    let infoText;
+    if (userRole === 'psp_basic_user') {
+        infoText = (
+            <div className="text-sm text-gray-600">
+                Showing {totalProducts} of {totalUnlimited} products. 
+                <a href="/upgrade" className="text-blue-600 hover:underline ml-1">(For full access, upgrade)</a>
+            </div>
+        );
+    } else {
+        // অন্য সব ইউজারের জন্য
+        infoText = (
+            <div className="text-sm text-gray-600">
+                Page {currentPage} of {totalPages}
+            </div>
+        );
+    }
+
+    // যদি মোট পৃষ্ঠা ১ বা তার কম হয় এবং ইউজার বেসিক না হয়, তাহলে কিছুই দেখাবে না
+    if (totalPages <= 1 && userRole !== 'psp_basic_user') {
+        return null;
     }
 
     return (
         <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center justify-center space-x-2">
-                <label className="text-sm text-gray-600">Rows per page:</label>
-                <select 
-                    value={itemsPerPage} 
-                    onChange={(e) => {
-                        setItemsPerPage(Number(e.target.value));
-                        onPageChange(1); // Rows per page পরিবর্তন করলে প্রথম পৃষ্ঠায় যান।
-                    }}
-                    className="px-3 py-1 border border-gray-300 rounded text-sm"
-                >
-                   <option value={3}>3</option>
-                    <option value={10}>10</option>
-                    <option value={25}>25</option>
-                    <option value={50}>50</option>
-                </select>
+            
+            {/* বাম পাশে তথ্য টেক্সট */}
+            <div className="flex-1">
+                {infoText}
             </div>
-            <div className="flex items-center space-x-2">
-                <button 
-                    onClick={() => onPageChange(currentPage - 1)} 
-                    disabled={currentPage === 1}
-                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm disabled:opacity-50"
-                >
-                    Previous
-                </button>
-                <span className="text-sm text-gray-600">
-                    Page {currentPage} of {totalPages}
-                </span>
-                <button 
-                    onClick={() => onPageChange(currentPage + 1)} 
-                    disabled={currentPage === totalPages}
-                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm disabled:opacity-50"
-                >
-                    Next
-                </button>
+
+            <div className="flex items-center justify-end gap-4">
+                {/* Rows per page ড্রপডাউন */}
+                <div className="flex items-center space-x-2">
+                    <label className="text-sm text-gray-600">Rows per page:</label>
+                    <select 
+                        value={itemsPerPage} 
+                        onChange={(e) => {
+                            const newSize = Number(e.target.value);
+                            setItemsPerPage(newSize);
+                            onPageChange(1);
+                        }}
+                        className="px-3 py-1 border border-gray-300 rounded text-sm"
+                    >
+                        <option value={3}>3</option>
+                        <option value={10}>10</option>
+                        <option value={25}>25</option>
+                        <option value={50}>50</option>
+                    </select>
+                </div>
+                
+                {/* পেজিনেশন বাটন (শুধুমাত্র যদি পৃষ্ঠা ১-এর বেশি হয়) */}
+                {totalPages > 1 && (
+                    <div className="flex items-center space-x-2">
+                        <button 
+                            onClick={() => onPageChange(currentPage - 1)} 
+                            disabled={currentPage === 1}
+                            className="px-3 py-2 border border-gray-300 rounded-lg text-sm disabled:opacity-50"
+                        >
+                            Previous
+                        </button>
+                        <button 
+                            onClick={() => onPageChange(currentPage + 1)} 
+                            disabled={currentPage === totalPages}
+                            className="px-3 py-2 border border-gray-300 rounded-lg text-sm disabled:opacity-50"
+                        >
+                            Next
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );
 };
-
 
 
 // ProductRow নামে একটি সাব-কম্পোনেন্ট তৈরি করা হচ্ছে
@@ -99,7 +129,7 @@ const ProductRow = ({ product,favoriteIds,onToggleFavorite ,onRowClick ,selected
 
 
 // মূল ProductTable কম্পোনেন্ট
-const ProductTable = ({  products, isLoading, error, onRowClick,favoriteIds, onToggleFavorite, currentPage, totalPages, onPageChange, itemsPerPage, setItemsPerPage,selectedRowIds, onSelectionChange }) => {
+const ProductTable = ({  products, isLoading, error, onRowClick,favoriteIds, onToggleFavorite, currentPage, totalPages, onPageChange, itemsPerPage, setItemsPerPage,selectedRowIds, onSelectionChange ,userRole, totalProducts, totalUnlimited}) => {
   const renderTableContent = () => {
     if (isLoading) {
       return (
@@ -124,7 +154,11 @@ const ProductTable = ({  products, isLoading, error, onRowClick,favoriteIds, onT
     }
     return products.map(product => <ProductRow key={product.id} product={product} onRowClick={onRowClick} favoriteIds={favoriteIds}
                 onToggleFavorite={onToggleFavorite} selectedRowIds={selectedRowIds}
-                onSelectionChange={onSelectionChange}/>);
+                onSelectionChange={onSelectionChange}
+                userRole={userRole}
+                totalProducts={totalProducts}
+                totalUnlimited={totalUnlimited}
+                />);
   };
   
   // যেহেতু সব ইউজার সব কলাম দেখতে পাবে না, আমাদের হেডারটিও ডাইনামিক করতে হবে।

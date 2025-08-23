@@ -21,10 +21,14 @@ function App() {
    const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
     const [itemsPerPage, setItemsPerPage] = useState(3);
+    const [userRole, setUserRole] = useState(''); 
+    const [totalUnlimited, setTotalUnlimited] = useState(0); 
   
   // ফিল্টার এবং সাইডবারের জন্য নতুন স্টেট
   const [filters, setFilters] = useState({});
   const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+
 
    const [selectedProduct, setSelectedProduct] = useState(null); 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -34,6 +38,7 @@ const [favoriteProducts, setFavoriteProducts] = useState([]);
    const [currentView, setCurrentView] = useState('dashboard'); 
 
    const [selectedRowIds, setSelectedRowIds] = useState([]);
+     const [myListProducts, setMyListProducts] = useState([]);
 
    useEffect(() => {
         // কম্পোনেন্ট মাউন্ট হলে body-তে ক্লাস যোগ করুন
@@ -95,6 +100,7 @@ const [favoriteProducts, setFavoriteProducts] = useState([]);
             );
             alert(response.data.message); // সফল হলে মেসেজ দেখানো
             setSelectedRowIds([]); // সিলেকশন রিসেট করা
+            fetchMyListData();
         } catch (err) {
             alert("Failed to add products to your list.");
             console.error("Add to list error:", err);
@@ -145,6 +151,8 @@ const [favoriteProducts, setFavoriteProducts] = useState([]);
 
             setProducts(prodResponse.data.products || []);
             setTotalPages(prodResponse.data.totalPages || 0);
+            setUserRole(prodResponse.data?.user_role || '');
+            setTotalUnlimited(prodResponse.data?.total_unlimited || 0);
 
         }  catch (err) {
             if (err.response && err.response.status === 403) {
@@ -153,6 +161,8 @@ const [favoriteProducts, setFavoriteProducts] = useState([]);
                 setError("Failed to fetch data. Please try again.");
             }
             console.error("API Error:", err);
+            setProducts([]);
+            setTotalPages(0);
             setProducts([]);
             setTotalPages(0);
         } finally {
@@ -194,6 +204,22 @@ const [favoriteProducts, setFavoriteProducts] = useState([]);
     };
 
     fetchProducts();
+
+        const fetchMyListData = async () => {
+        try {
+            const myListResponse = await axios.get(MYLIST_API_URL, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (myListResponse.data && myListResponse.data.products) {
+                setMyListProducts(myListResponse.data.products);
+            }
+        } catch (err) {
+            console.error("Failed to fetch My List:", err);
+        }
+    };
+
+    fetchMyListData();
+
   }, [token, filters, currentPage, itemsPerPage, currentView]);
 
 
@@ -236,7 +262,7 @@ const [favoriteProducts, setFavoriteProducts] = useState([]);
   if (!token) {
     return <Login onLoginSuccess={handleLoginSuccess} />;
   }
-
+  const totalProductsCount = products.length;
   return (
     <div id="app" className="font-inter bg-brand-light flex h-screen">
       <Sidebar 
@@ -267,6 +293,9 @@ const [favoriteProducts, setFavoriteProducts] = useState([]);
                         onToggleFavorite={handleToggleFavorite} 
                         selectedRowIds={selectedRowIds}
                         onSelectionChange={handleRowSelectionChange}
+                        userRole={userRole}
+                        totalProducts={totalProductsCount} 
+                        totalUnlimited={totalUnlimited}
                     />
                   </>
                   )}
@@ -283,7 +312,7 @@ const [favoriteProducts, setFavoriteProducts] = useState([]);
 
                         {currentView === 'mylist' && (
                             <MyListPage
-                                token={token}
+                                myListProducts={myListProducts}
                                 onRowClick={handleOpenModal}
                                 onToggleFavorite={handleToggleFavorite}
                                 favoriteIds={favoriteIds}

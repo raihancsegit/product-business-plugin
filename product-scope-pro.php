@@ -302,7 +302,8 @@ function psp_get_products_callback(WP_REST_Request $request)
 
     // ১. মোট প্রোডাক্টের সংখ্যা গণনা করা (বেসিক ইউজারের জন্য সীমাবদ্ধ)
     $total_products_count_query = "SELECT COUNT(id) FROM $table_name $where_sql";
-
+    $total_products_query = "SELECT COUNT(id) FROM $table_name $where_sql";
+    $total_unlimited_products = (int) $wpdb->get_var($total_products_query);
     if ($is_basic_user) {
         // প্রথমে ডাটাবেস থেকে সব প্রোডাক্টের আইডি (ফিল্টারসহ) আনা হচ্ছে
         $all_product_ids = $wpdb->get_col("SELECT id FROM $table_name $where_sql");
@@ -313,7 +314,8 @@ function psp_get_products_callback(WP_REST_Request $request)
         $total_products_count = count($allowed_ids);
     } else {
         $total_products_count = (int) $wpdb->get_var($total_products_count_query);
-        $allowed_ids = null; // অন্যান্য ইউজারদের জন্য কোনো আইডি সীমাবদ্ধতা নেই
+        $allowed_ids = null;
+        $total_products_count = $total_unlimited_products;
     }
 
     // ২. পেজিনেশন প্যারামিটার গণনা করা
@@ -344,7 +346,8 @@ function psp_get_products_callback(WP_REST_Request $request)
         'products' => $products,
         'total' => $total_products_count,
         'totalPages' => $total_pages,
-        'user_role' => $roles[0] ?? 'unknown'
+        'user_role' => $roles[0] ?? 'unknown',
+        'total_unlimited' => $total_unlimited_products
     ], 200);
 }
 

@@ -1,31 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart as faSolidHeart } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as faRegularHeart } from '@fortawesome/free-regular-svg-icons';
 
-// API URL - এটি App.jsx থেকেও prop হিসেবে পাস করা যেতে পারে, তবে আপাতত এখানেই রাখছি
-import { MYLIST_API_URL } from '../config';
 // টেবিলের প্রতিটি সারির জন্য একটি সাব-কম্পোনেন্ট
 // এটি কোডকে পরিষ্কার রাখে এবং পুনঃব্যবহারযোগ্য করে তোলে
-const MyListProductRow = ({ product, onRowClick, onToggleFavorite, isFavorite }) => {
+const MyListProductRow = ({ product, onRowClick}) => {
     return (
         <tr onClick={() => onRowClick(product)} className="hover:bg-gray-50 transition-colors cursor-pointer">
-            <td className="px-3 py-4 text-center">
-                <div 
-                    onClick={(e) => { 
-                        e.stopPropagation(); // মডাল খোলা থেকে বিরত রাখতে
-                        onToggleFavorite(product.id);
-                    }}
-                    className="inline-block"
-                >
-                    <FontAwesomeIcon 
-                        icon={isFavorite ? faSolidHeart : faRegularHeart} 
-                        className={`${isFavorite ? 'text-red-500' : 'text-gray-400'} cursor-pointer hover:text-red-500`} 
-                        size="xs"
-                    />
-                </div>
-            </td>
+           
             <td className="px-4 py-4">
                 <div className="flex items-center space-x-3">
                     <img 
@@ -52,48 +35,11 @@ const MyListProductRow = ({ product, onRowClick, onToggleFavorite, isFavorite })
 };
 
 
-const MyListPage = ({ token, onRowClick, onToggleFavorite, favoriteIds }) => {
-    const [myListProducts, setMyListProducts] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(null);
-
-    // এই কম্পোনেন্টটি যখনই দেখানো হবে (বা token পরিবর্তন হবে), তখন API কল করে ডেটা আনবে
-    useEffect(() => {
-        const fetchMyList = async () => {
-            if (!token) {
-                setIsLoading(false);
-                return;
-            }
-            
-            setIsLoading(true);
-            setError(null);
-            
-            try {
-                const response = await axios.get(MYLIST_API_URL, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                setMyListProducts(response.data.products || []);
-            } catch (err) {
-                setError("Failed to load your list. Please try again later.");
-                console.error("Failed to load My List products:", err);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        
-        fetchMyList();
-    }, [token]);
-
+const MyListPage = ({ myListProducts, onRowClick }) => {
+  
     // কন্টেন্ট রেন্ডার করার জন্য একটি হেল্পার ফাংশন
     const renderContent = () => {
-        if (isLoading) {
-            return <p className="text-center p-8 text-gray-500">Loading your list...</p>;
-        }
-
-        if (error) {
-            return <p className="text-center p-8 text-red-600">{error}</p>;
-        }
-
+       
         if (myListProducts.length === 0) {
             return <p className="text-center p-8 text-gray-500">Your list is empty. Add products from the dashboard to see them here.</p>;
         }
@@ -103,7 +49,7 @@ const MyListPage = ({ token, onRowClick, onToggleFavorite, favoriteIds }) => {
                 <table className="w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                         <tr>
-                            <th className="px-3 py-3 w-16 text-left text-xs font-medium text-gray-500 uppercase">Fav</th>
+                           
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
                             <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
                             <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rating</th>
@@ -117,8 +63,7 @@ const MyListPage = ({ token, onRowClick, onToggleFavorite, favoriteIds }) => {
                                 key={product.id}
                                 product={product}
                                 onRowClick={onRowClick}
-                                onToggleFavorite={onToggleFavorite}
-                                isFavorite={favoriteIds.includes(product.id)}
+                               
                             />
                         ))}
                     </tbody>
